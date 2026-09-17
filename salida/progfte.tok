@@ -1,0 +1,288 @@
+======================================================================
+     LISTA DE LEXEMAS Y TOKENS - ANALIZADOR LEXICO PF2025
+======================================================================
+
+--- TOKENS RECONOCIDOS ---
+----------------------------------------------------------------------
+Renglon: 1, Lexema: pf2025, Token: 100 PROG
+Renglon: 1, Lexema: EjemploCalculadora, Token: 600 id
+Renglon: 2, Lexema: decl, Token: 101 DECL
+Renglon: 4, Lexema: Ent, Token: 108 ENT
+Renglon: 4, Lexema: a, Token: 601 id
+Renglon: 4, Lexema: ,, Token: 501 COMA
+Renglon: 4, Lexema: b, Token: 602 id
+Renglon: 4, Lexema: ,, Token: 501 COMA
+Renglon: 4, Lexema: resultado, Token: 603 id
+Renglon: 4, Lexema: ;, Token: 500 PC
+Renglon: 5, Lexema: cad, Token: 109 CAD
+Renglon: 5, Lexema: ;, Token: 500 PC
+Renglon: 6, Lexema: Bool, Token: 110 BOOL
+Renglon: 6, Lexema: esValido, Token: 604 id
+Renglon: 6, Lexema: ,, Token: 501 COMA
+Renglon: 6, Lexema: terminado, Token: 605 id
+Renglon: 6, Lexema: ;, Token: 500 PC
+Renglon: 7, Lexema: inicio, Token: 102 INICIO
+Renglon: 9, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 9, Lexema: (, Token: 502 PAREN
+Renglon: 9, Lexema: "Ingrese el primer numero", Token: 800 CAD_LIT
+Renglon: 9, Lexema: ), Token: 503 TESIS
+Renglon: 9, Lexema: ;, Token: 500 PC
+Renglon: 10, Lexema: leerdig, Token: 111 LEERDIG
+Renglon: 10, Lexema: (, Token: 502 PAREN
+Renglon: 10, Lexema: a, Token: 601 id
+Renglon: 10, Lexema: ), Token: 503 TESIS
+Renglon: 10, Lexema: ;, Token: 500 PC
+Renglon: 11, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 11, Lexema: (, Token: 502 PAREN
+Renglon: 11, Lexema: "Ingrese el segundo numero", Token: 801 CAD_LIT
+Renglon: 11, Lexema: ), Token: 503 TESIS
+Renglon: 11, Lexema: ;, Token: 500 PC
+Renglon: 12, Lexema: leerdig, Token: 111 LEERDIG
+Renglon: 12, Lexema: (, Token: 502 PAREN
+Renglon: 12, Lexema: b, Token: 602 id
+Renglon: 12, Lexema: ), Token: 503 TESIS
+Renglon: 12, Lexema: ;, Token: 500 PC
+Renglon: 14, Lexema: resultado, Token: 603 id
+Renglon: 14, Lexema: :=, Token: 504 ASIG
+Renglon: 14, Lexema: a, Token: 601 id
+Renglon: 14, Lexema: +, Token: 505 MAS
+Renglon: 14, Lexema: b, Token: 602 id
+Renglon: 14, Lexema: ;, Token: 500 PC
+Renglon: 15, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 15, Lexema: (, Token: 502 PAREN
+Renglon: 15, Lexema: "El resultado de la suma es:", Token: 802 CAD_LIT
+Renglon: 15, Lexema: ), Token: 503 TESIS
+Renglon: 15, Lexema: ;, Token: 500 PC
+Renglon: 16, Lexema: impdig, Token: 113 IMPDIG
+Renglon: 16, Lexema: (, Token: 502 PAREN
+Renglon: 16, Lexema: resultado, Token: 603 id
+Renglon: 16, Lexema: ), Token: 503 TESIS
+Renglon: 16, Lexema: ;, Token: 500 PC
+Renglon: 17, Lexema: resultado, Token: 603 id
+Renglon: 17, Lexema: :=, Token: 504 ASIG
+Renglon: 17, Lexema: a, Token: 601 id
+Renglon: 17, Lexema: *, Token: 507 MUL
+Renglon: 17, Lexema: b, Token: 602 id
+Renglon: 17, Lexema: ;, Token: 500 PC
+Renglon: 18, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 18, Lexema: (, Token: 502 PAREN
+Renglon: 18, Lexema: "El resultado de la multiplicacion es:", Token: 803 CAD_LIT
+Renglon: 18, Lexema: ), Token: 503 TESIS
+Renglon: 18, Lexema: ;, Token: 500 PC
+Renglon: 19, Lexema: impdig, Token: 113 IMPDIG
+Renglon: 19, Lexema: (, Token: 502 PAREN
+Renglon: 19, Lexema: resultado, Token: 603 id
+Renglon: 19, Lexema: ), Token: 503 TESIS
+Renglon: 19, Lexema: ;, Token: 500 PC
+Renglon: 20, Lexema: resultado, Token: 603 id
+Renglon: 20, Lexema: :=, Token: 504 ASIG
+Renglon: 20, Lexema: a, Token: 601 id
+Renglon: 20, Lexema: -, Token: 506 MENOS
+Renglon: 20, Lexema: b, Token: 602 id
+Renglon: 20, Lexema: ;, Token: 500 PC
+Renglon: 21, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 21, Lexema: (, Token: 502 PAREN
+Renglon: 21, Lexema: "El resultado de la resta es:", Token: 804 CAD_LIT
+Renglon: 21, Lexema: ), Token: 503 TESIS
+Renglon: 21, Lexema: ;, Token: 500 PC
+Renglon: 22, Lexema: impdig, Token: 113 IMPDIG
+Renglon: 22, Lexema: (, Token: 502 PAREN
+Renglon: 22, Lexema: resultado, Token: 603 id
+Renglon: 22, Lexema: ), Token: 503 TESIS
+Renglon: 22, Lexema: ;, Token: 500 PC
+Renglon: 23, Lexema: resultado, Token: 603 id
+Renglon: 23, Lexema: :=, Token: 504 ASIG
+Renglon: 23, Lexema: a, Token: 601 id
+Renglon: 23, Lexema: /, Token: 508 DIV
+Renglon: 23, Lexema: b, Token: 602 id
+Renglon: 23, Lexema: ;, Token: 500 PC
+Renglon: 24, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 24, Lexema: (, Token: 502 PAREN
+Renglon: 24, Lexema: "El resultado de la division es:", Token: 805 CAD_LIT
+Renglon: 24, Lexema: ), Token: 503 TESIS
+Renglon: 24, Lexema: ;, Token: 500 PC
+Renglon: 25, Lexema: impdig, Token: 113 IMPDIG
+Renglon: 25, Lexema: (, Token: 502 PAREN
+Renglon: 25, Lexema: resultado, Token: 603 id
+Renglon: 25, Lexema: ), Token: 503 TESIS
+Renglon: 25, Lexema: ;, Token: 500 PC
+Renglon: 27, Lexema: esValido, Token: 604 id
+Renglon: 27, Lexema: :=, Token: 504 ASIG
+Renglon: 27, Lexema: verdadero, Token: 116 VERDADERO
+Renglon: 27, Lexema: ;, Token: 500 PC
+Renglon: 28, Lexema: terminado, Token: 605 id
+Renglon: 28, Lexema: :=, Token: 504 ASIG
+Renglon: 28, Lexema: falso, Token: 117 FALSO
+Renglon: 28, Lexema: ;, Token: 500 PC
+Renglon: 30, Lexema: si, Token: 104 SI
+Renglon: 30, Lexema: a, Token: 601 id
+Renglon: 30, Lexema: ==, Token: 513 EQU
+Renglon: 30, Lexema: b, Token: 602 id
+Renglon: 30, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 31, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 31, Lexema: (, Token: 502 PAREN
+Renglon: 31, Lexema: "Los numeros son iguales", Token: 806 CAD_LIT
+Renglon: 31, Lexema: ), Token: 503 TESIS
+Renglon: 31, Lexema: ;, Token: 500 PC
+Renglon: 32, Lexema: sino, Token: 106 SINO
+Renglon: 33, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 33, Lexema: (, Token: 502 PAREN
+Renglon: 33, Lexema: "Los numeros son diferentes", Token: 807 CAD_LIT
+Renglon: 33, Lexema: ), Token: 503 TESIS
+Renglon: 33, Lexema: ;, Token: 500 PC
+Renglon: 34, Lexema: finsi, Token: 107 FINSI
+Renglon: 34, Lexema: ;, Token: 500 PC
+Renglon: 35, Lexema: si, Token: 104 SI
+Renglon: 35, Lexema: a, Token: 601 id
+Renglon: 35, Lexema: !=, Token: 514 DIF
+Renglon: 35, Lexema: b, Token: 602 id
+Renglon: 35, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 36, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 36, Lexema: (, Token: 502 PAREN
+Renglon: 36, Lexema: "Los numeros son diferentes", Token: 807 CAD_LIT
+Renglon: 36, Lexema: ), Token: 503 TESIS
+Renglon: 36, Lexema: ;, Token: 500 PC
+Renglon: 37, Lexema: finsi, Token: 107 FINSI
+Renglon: 37, Lexema: ;, Token: 500 PC
+Renglon: 38, Lexema: si, Token: 104 SI
+Renglon: 38, Lexema: a, Token: 601 id
+Renglon: 38, Lexema: >, Token: 509 MAYOR
+Renglon: 38, Lexema: b, Token: 602 id
+Renglon: 38, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 39, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 39, Lexema: (, Token: 502 PAREN
+Renglon: 39, Lexema: "El primer numero es mayor", Token: 808 CAD_LIT
+Renglon: 39, Lexema: ), Token: 503 TESIS
+Renglon: 39, Lexema: ;, Token: 500 PC
+Renglon: 40, Lexema: finsi, Token: 107 FINSI
+Renglon: 40, Lexema: ;, Token: 500 PC
+Renglon: 41, Lexema: si, Token: 104 SI
+Renglon: 41, Lexema: a, Token: 601 id
+Renglon: 41, Lexema: <, Token: 510 MENOR
+Renglon: 41, Lexema: b, Token: 602 id
+Renglon: 41, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 42, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 42, Lexema: (, Token: 502 PAREN
+Renglon: 42, Lexema: "El segundo numero es mayor", Token: 809 CAD_LIT
+Renglon: 42, Lexema: ), Token: 503 TESIS
+Renglon: 42, Lexema: ;, Token: 500 PC
+Renglon: 43, Lexema: finsi, Token: 107 FINSI
+Renglon: 43, Lexema: ;, Token: 500 PC
+Renglon: 44, Lexema: si, Token: 104 SI
+Renglon: 44, Lexema: a, Token: 601 id
+Renglon: 44, Lexema: >=, Token: 511 MAYIG
+Renglon: 44, Lexema: b, Token: 602 id
+Renglon: 44, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 45, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 45, Lexema: (, Token: 502 PAREN
+Renglon: 45, Lexema: "El primer numero es mayor o igual", Token: 810 CAD_LIT
+Renglon: 45, Lexema: ), Token: 503 TESIS
+Renglon: 45, Lexema: ;, Token: 500 PC
+Renglon: 46, Lexema: finsi, Token: 107 FINSI
+Renglon: 46, Lexema: ;, Token: 500 PC
+Renglon: 47, Lexema: si, Token: 104 SI
+Renglon: 47, Lexema: a, Token: 601 id
+Renglon: 47, Lexema: <=, Token: 512 MENIG
+Renglon: 47, Lexema: b, Token: 602 id
+Renglon: 47, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 48, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 48, Lexema: (, Token: 502 PAREN
+Renglon: 48, Lexema: "El segundo numero es mayor o igual", Token: 811 CAD_LIT
+Renglon: 48, Lexema: ), Token: 503 TESIS
+Renglon: 48, Lexema: ;, Token: 500 PC
+Renglon: 49, Lexema: finsi, Token: 107 FINSI
+Renglon: 49, Lexema: ;, Token: 500 PC
+Renglon: 51, Lexema: si, Token: 104 SI
+Renglon: 51, Lexema: a, Token: 601 id
+Renglon: 51, Lexema: >, Token: 509 MAYOR
+Renglon: 51, Lexema: b, Token: 602 id
+Renglon: 51, Lexema: y, Token: 118 Y
+Renglon: 51, Lexema: b, Token: 602 id
+Renglon: 51, Lexema: >, Token: 509 MAYOR
+Renglon: 51, Lexema: 0, Token: 700 CENT
+Renglon: 51, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 52, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 52, Lexema: (, Token: 502 PAREN
+Renglon: 52, Lexema: "a es mayor y b es positivo", Token: 812 CAD_LIT
+Renglon: 52, Lexema: ), Token: 503 TESIS
+Renglon: 52, Lexema: ;, Token: 500 PC
+Renglon: 53, Lexema: finsi, Token: 107 FINSI
+Renglon: 53, Lexema: ;, Token: 500 PC
+Renglon: 54, Lexema: si, Token: 104 SI
+Renglon: 54, Lexema: a, Token: 601 id
+Renglon: 54, Lexema: ==, Token: 513 EQU
+Renglon: 54, Lexema: b, Token: 602 id
+Renglon: 54, Lexema: o, Token: 119 O
+Renglon: 54, Lexema: b, Token: 602 id
+Renglon: 54, Lexema: ==, Token: 513 EQU
+Renglon: 54, Lexema: 0, Token: 700 CENT
+Renglon: 54, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 55, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 55, Lexema: (, Token: 502 PAREN
+Renglon: 55, Lexema: "a es igual a b o b es cero", Token: 813 CAD_LIT
+Renglon: 55, Lexema: ), Token: 503 TESIS
+Renglon: 55, Lexema: ;, Token: 500 PC
+Renglon: 56, Lexema: finsi, Token: 107 FINSI
+Renglon: 56, Lexema: ;, Token: 500 PC
+Renglon: 57, Lexema: si, Token: 104 SI
+Renglon: 57, Lexema: no, Token: 120 NO
+Renglon: 57, Lexema: esValido, Token: 604 id
+Renglon: 57, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 58, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 58, Lexema: (, Token: 502 PAREN
+Renglon: 58, Lexema: "esValido es falso", Token: 814 CAD_LIT
+Renglon: 58, Lexema: ), Token: 503 TESIS
+Renglon: 58, Lexema: ;, Token: 500 PC
+Renglon: 59, Lexema: finsi, Token: 107 FINSI
+Renglon: 59, Lexema: ;, Token: 500 PC
+Renglon: 60, Lexema: si, Token: 104 SI
+Renglon: 60, Lexema: no, Token: 120 NO
+Renglon: 60, Lexema: terminado, Token: 605 id
+Renglon: 60, Lexema: y, Token: 118 Y
+Renglon: 60, Lexema: a, Token: 601 id
+Renglon: 60, Lexema: >, Token: 509 MAYOR
+Renglon: 60, Lexema: 0, Token: 700 CENT
+Renglon: 60, Lexema: entonces, Token: 105 ENTONCES
+Renglon: 61, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 61, Lexema: (, Token: 502 PAREN
+Renglon: 61, Lexema: "El programa continua", Token: 815 CAD_LIT
+Renglon: 61, Lexema: ), Token: 503 TESIS
+Renglon: 61, Lexema: ;, Token: 500 PC
+Renglon: 62, Lexema: finsi, Token: 107 FINSI
+Renglon: 62, Lexema: ;, Token: 500 PC
+Renglon: 64, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 64, Lexema: (, Token: 502 PAREN
+Renglon: 64, Lexema: "Ingrese su nombre:", Token: 816 CAD_LIT
+Renglon: 64, Lexema: ), Token: 503 TESIS
+Renglon: 64, Lexema: ;, Token: 500 PC
+Renglon: 65, Lexema: leercad, Token: 112 LEERCAD
+Renglon: 65, Lexema: (, Token: 502 PAREN
+Renglon: 65, Lexema: nombreUsuario, Token: 606 id
+Renglon: 65, Lexema: ), Token: 503 TESIS
+Renglon: 65, Lexema: ;, Token: 500 PC
+Renglon: 66, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 66, Lexema: (, Token: 502 PAREN
+Renglon: 66, Lexema: "Hola usuario:", Token: 817 CAD_LIT
+Renglon: 66, Lexema: ), Token: 503 TESIS
+Renglon: 66, Lexema: ;, Token: 500 PC
+Renglon: 67, Lexema: impcad, Token: 114 IMPCAD
+Renglon: 67, Lexema: (, Token: 502 PAREN
+Renglon: 67, Lexema: nombreUsuario, Token: 606 id
+Renglon: 67, Lexema: ), Token: 503 TESIS
+Renglon: 67, Lexema: ;, Token: 500 PC
+Renglon: 68, Lexema: resultado, Token: 603 id
+Renglon: 68, Lexema: :=, Token: 504 ASIG
+Renglon: 68, Lexema: a, Token: 601 id
+Renglon: 68, Lexema: +, Token: 505 MAS
+Renglon: 68, Lexema: b, Token: 602 id
+Renglon: 68, Lexema: ;, Token: 500 PC
+Renglon: 69, Lexema: fin, Token: 103 FIN
+
+======================================================================
+--- ERRORES LEXICOS ---
+----------------------------------------------------------------------
+Renglon: 5, Identificador no valido: nombre@Usuario (contiene caracteres no permitidos)
+
+======================================================================
+Total de tokens: 273
+Total de errores: 1

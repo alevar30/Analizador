@@ -1,0 +1,69 @@
+pf2025 EjemploCalculadora
+decl
+/* Comentario: Declaracion de variables enteras */
+Ent a, b, resultado;
+cad nombre@Usuario;
+Bool esValido, terminado;
+inicio
+/* ---- Seccion 1: Entrada y salida de datos ---- */
+impcad("Ingrese el primer numero");
+leerdig(a);
+impcad("Ingrese el segundo numero");
+leerdig(b);
+/* ---- Seccion 2: Operaciones aritmeticas ---- */
+resultado := a + b;
+impcad("El resultado de la suma es:");
+impdig(resultado);
+resultado := a * b;
+impcad("El resultado de la multiplicacion es:");
+impdig(resultado);
+resultado := a - b;
+impcad("El resultado de la resta es:");
+impdig(resultado);
+resultado := a / b;
+impcad("El resultado de la division es:");
+impdig(resultado);
+/* ---- Seccion 3: Asignacion booleana ---- */
+esValido := verdadero;
+terminado := falso;
+/* ---- Seccion 4: Condicional si con todos los operadores relacionales ---- */
+si a == b entonces
+    impcad("Los numeros son iguales");
+sino
+    impcad("Los numeros son diferentes");
+finsi;
+si a != b entonces
+    impcad("Los numeros son diferentes");
+finsi;
+si a > b entonces
+    impcad("El primer numero es mayor");
+finsi;
+si a < b entonces
+    impcad("El segundo numero es mayor");
+finsi;
+si a >= b entonces
+    impcad("El primer numero es mayor o igual");
+finsi;
+si a <= b entonces
+    impcad("El segundo numero es mayor o igual");
+finsi;
+/* ---- Seccion 5: Operadores logicos (y, o, no) ---- */
+si a > b y b > 0 entonces
+    impcad("a es mayor y b es positivo");
+finsi;
+si a == b o b == 0 entonces
+    impcad("a es igual a b o b es cero");
+finsi;
+si no esValido entonces
+    impcad("esValido es falso");
+finsi;
+si no terminado y a > 0 entonces
+    impcad("El programa continua");
+finsi;
+/* ---- Seccion 6: Cadena y error lexico intencional ---- */
+impcad("Ingrese su nombre:");
+leercad(nombreUsuario);
+impcad("Hola usuario:");
+impcad(nombreUsuario);
+resultado := a + b;
+fin

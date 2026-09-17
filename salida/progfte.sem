@@ -1,0 +1,20 @@
+======================================================================
+     ANALISIS SEMANTICO - ANALIZADOR LEXICO PF2025
+======================================================================
+
+--- VARIABLES DECLARADAS ---
+----------------------------------------------------------------------
+Variable: a                    Tipo: ent
+Variable: b                    Tipo: ent
+Variable: resultado            Tipo: ent
+Variable: esValido             Tipo: bool
+Variable: terminado            Tipo: bool
+Total de variables declaradas: 5
+
+--- ERRORES SEMANTICOS ---
+----------------------------------------------------------------------
+Renglon: 65, Columna: 9, Variable no declarada: nombreUsuario
+Renglon: 67, Columna: 8, Variable no declarada: nombreUsuario
+
+======================================================================
+Total de errores semanticos: 2

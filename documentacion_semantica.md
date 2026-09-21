@@ -4,7 +4,7 @@
 
 ## 1. Introducción
 
-El análisis semántico se implementa como una segunda pasada sobre la lista de tokens generada por el analizador léxico (clase `AnalizadorSemantico`, en `src/analizador_lexico.py`). Trabaja en una sola pasada y verifica, reportando **renglón y columna**:
+El análisis semántico se implementa como una segunda pasada sobre la lista de tokens generada por el analizador léxico (clase `AnalizadorSemantico`, en `src/analizador_lexico.py`). Realiza sus comprobaciones en una sola pasada y reporta **renglón y columna**:
 
 - que todas las variables usadas estén declaradas;
 - que ninguna variable se declare dos veces;
@@ -48,7 +48,7 @@ El análisis semántico se implementa como una segunda pasada sobre la lista de 
 
 ## 4. Reglas de tipos y acciones semánticas (esquema de traducción)
 
-La pila semántica guarda el tipo de cada operando; por cada operador se extraen los operandos, se comprueban y se determina el tipo resultado. Los errores se reportan con renglón y columna; cuando una variable no declarada produce un tipo inválido se evitan errores en cascada.
+La pila semántica guarda el tipo de cada operando; por cada operador se extraen los operandos, se comprueban y se determina el tipo resultado. Los errores (léxicos y semánticos) se unifican en una sola lista ordenada por renglón; cada error se reporta en una línea con **renglón, columna, fase y tipo de dato** (`Renglon: N, Columna: N, Lexico|Semantico, Tipo de dato: X, descripcion`). Cuando una variable no declarada produce un tipo inválido se evitan errores en cascada.
 
 | Regla gramatical | Acción semántica | Tipo resultado |
 |---|---|---|
@@ -100,13 +100,24 @@ La pila semántica guarda el tipo de cada operando; por cada operador se extraen
 
 Variables declaradas: `a` (ent), `b` (ent), `resultado` (ent), `esValido` (bool), `terminado` (bool) → 5 variables.
 
-La línea `cad nombre@Usuario;` provoca un error léxico y su declaración se omite, por lo que `nombreUsuario` queda sin declarar. Errores semánticos reportados en `salida/progfte.sem`:
+La línea `cad nombre@Usuario;` provoca un error léxico y su declaración se omite, por lo que `nombreUsuario` queda sin declarar. Errores reportados en `salida/progfte.sem` (lista unificada de las dos fases):
 
 ```
-Renglon: 65, Columna: 9, Variable no declarada: nombreUsuario
-Renglon: 67, Columna: 8, Variable no declarada: nombreUsuario
-Total de errores semanticos: 2
+Renglon: 5, Columna: 5, Lexico, Tipo de dato: -, Identificador no valido: nombre@Usuario (contiene caracteres no permitidos)
+Renglon: 65, Columna: 9, Semantico, Tipo de dato: desconocido, Variable no declarada: nombreUsuario
+Renglon: 67, Columna: 8, Semantico, Tipo de dato: desconocido, Variable no declarada: nombreUsuario
+Total de errores: 3
 ```
+
+### 6.1 Pruebas de robustez del análisis léxico
+
+Se verificaron tres casos que no deben alterar el contenido del programa:
+
+- `a!=b` se reconoce como el operador `!=` aunque no tenga espacios.
+- Una cadena como `"hola ;, ) ("` conserva sus separadores internos.
+- Los textos `/*` y `*/` dentro de una cadena se conservan y no activan el borrado de comentarios.
+
+Los comentarios externos, incluidos los multilínea, continúan eliminándose. Las pruebas de regresión pasaron y el programa de referencia conserva 273 tokens y 3 errores unificados.
 
 *(redactar)* Comparación de las verificaciones pedidas en la rúbrica U1 con lo implementado y una conclusión personal.
 

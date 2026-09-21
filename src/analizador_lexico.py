@@ -35,6 +35,7 @@
 
 import re
 import os
+import json
 
 # ===========================================================================
 # DEFINICION DE TOKENS Y TABLA DE SIMBOLOS
@@ -69,6 +70,9 @@ PALABRAS_RESERVADAS = {
     'y':           ('Y',         118),
     'o':           ('O',         119),
     'no':          ('NO',        120),
+    'mientras':    ('MIENTRAS', 121),
+    'hacer':       ('HACER', 122),
+    'finmientras': ('FINMIENTRAS', 123),
 }
 
 # Diccionario de operadores y simbolos especiales
@@ -249,58 +253,46 @@ class AnalizadorLexico:
         return ''.join(partes)
 
     def depurar_codigo(self):
-        """
-        Elimina comentarios del tipo /* ... */ y limpia espacios innecesarios
-        (tabuladores, multiples espacios). Genera el codigo depurado que
-        se guardara en progfte.dep.
-        El analizador soporta comentarios multinea.
-        FIX #2/#5: La limpieza de espacios ahora respeta el contenido de
-        las cadenas literales para no alterarlas.
-        """
-        dentro_comentario = False
-        codigo_depurado_lineas = []
+        """Enmascara comentarios sin desplazar las coordenadas originales.
 
-        for i, linea in enumerate(self.lineas_originales, 1):
-            nueva_linea = ""
+        El lexer usa lineas_lexicas; .dep es solamente una vista normalizada.
+        Las columnas cuentan caracteres desde 1 (un tabulador cuenta como uno).
+        """
+        self.lineas_lexicas = []
+        self.codigo_depurado = []
+        self.errores = []
+        inicio_comentario = None
+        for renglon, original in enumerate(self.lineas_originales, 1):
+            linea = original.rstrip('\r\n')
+            salida = list(linea)
+            cadena = False
             j = 0
-            dentro_cadena = False
             while j < len(linea):
-                if dentro_comentario:
-                    # Dentro de un comentario, las comillas no cambian el estado.
-                    if j + 1 < len(linea) and linea[j] == '*' and linea[j + 1] == '/':
-                        dentro_comentario = False
+                par = linea[j:j + 2]
+                if inicio_comentario:
+                    salida[j] = ' '
+                    if par == '*/':
+                        salida[j:j + 2] = [' ', ' ']
+                        inicio_comentario = None
                         j += 2
                     else:
                         j += 1
-                    continue
-
-                if linea[j] == '"':
-                    nueva_linea += linea[j]
+                elif not cadena and par == '/*':
+                    inicio_comentario = (renglon, j + 1)
+                    salida[j:j + 2] = [' ', ' ']
+                    j += 2
+                else:
+                    if linea[j] == '"':
+                        cadena = not cadena
                     j += 1
-                    dentro_cadena = not dentro_cadena
-                    continue
-
-                # Detectar inicio de comentario /*
-                if (not dentro_cadena and j + 1 < len(linea)
-                        and linea[j] == '/' and linea[j + 1] == '*'):
-                    dentro_comentario = True
-                    j += 2  # Saltar los caracteres /*
-                    continue
-
-                # Caracter normal: agregarlo
-                nueva_linea += linea[j]
-                j += 1
-
-            # Limpiar la linea respetando cadenas literales
-            nueva_linea = self._limpiar_linea_fuera_cadenas(nueva_linea)
-
-            # Eliminar espacios al inicio y final de la linea (fuera de cadenas)
-            nueva_linea = nueva_linea.strip()
-            nueva_linea = self._normalizar_separadores_fuera_cadenas(nueva_linea)
-
-            codigo_depurado_lineas.append(nueva_linea)
-
-        self.codigo_depurado = codigo_depurado_lineas
+            limpia = ''.join(salida)
+            self.lineas_lexicas.append(limpia)
+            self.codigo_depurado.append(self._normalizar_separadores_fuera_cadenas(
+                self._limpiar_linea_fuera_cadenas(limpia)).strip())
+        if inicio_comentario:
+            renglon, columna = inicio_comentario
+            self.errores.append({'linea': renglon, 'columna': columna,
+                'lexema': '/*', 'descripcion': 'Comentario sin cierre: se esperaba */'})
         print(f"[OK] Codigo depurado generado ({len(self.codigo_depurado)} lineas)")
 
     # =========================================================================
@@ -346,18 +338,22 @@ class AnalizadorLexico:
     # =========================================================================
     def analizar(self):
         """
-        Realiza el analisis lexico completo del codigo depurado.
+        Realiza el analisis lexico sobre las lineas con posiciones originales.
         Para cada linea, identifica tokens, palabras reservadas,
         identificadores, constantes, cadenas, operadores y errores.
         Almacena resultados en tabla_simbolos, lista_tokens y errores.
         """
         global id_counter, cte_counter, cad_counter
 
+        self.lista_tokens.clear()
+        self.tabla_simbolos.clear()
+        self.lexemas_set.clear()
+        self.lexema_a_ref.clear()
         id_counter = 600
         cte_counter = 700
         cad_counter = 800
 
-        for num_linea, linea in enumerate(self.codigo_depurado, 1):
+        for num_linea, linea in enumerate(self.lineas_lexicas, 1):
             if not linea.strip():
                 continue  # Saltar lineas vacias
 
@@ -453,6 +449,13 @@ class AnalizadorLexico:
                     while pos < n and linea[pos].isdigit():
                         pos += 1
                     lexema_num = linea[inicio_num:pos]
+                    if pos < n and (linea[pos].isalpha() or linea[pos] == '_'):
+                        while pos < n and (linea[pos].isalnum() or linea[pos] == '_'):
+                            pos += 1
+                        self.errores.append({'linea': num_linea, 'columna': columna,
+                            'lexema': linea[inicio_num:pos],
+                            'descripcion': 'Identificador no valido: debe iniciar con letra'})
+                        continue
                     # FIX #1: Obtener referencia correcta usando mapa O(1)
                     ref_existente = self._obtener_ref(lexema_num)
                     if ref_existente is None:
@@ -502,6 +505,12 @@ class AnalizadorLexico:
                                 'descripcion': f'Identificador no valido: {lexema_completo} (contiene caracteres no permitidos)'
                             })
                             continue
+
+                    if '_' in lexema_id:
+                        self.errores.append({'linea': num_linea, 'columna': columna,
+                            'lexema': lexema_id,
+                            'descripcion': f'Identificador no valido: {lexema_id} (no se permite _) '})
+                        continue
 
                     # Verificar si es palabra reservada
                     if lexema_id in PALABRAS_RESERVADAS:
@@ -615,9 +624,7 @@ class AnalizadorLexico:
             f.write("-" * 70 + "\n")
             if errores:
                 for err in errores:
-                    f.write(f"Renglon: {err['renglon']}, Columna: {err['columna']}, "
-                            f"{err['fase']}, Tipo de dato: {err['tipo_dato']}, "
-                            f"{err['descripcion']}\n")
+                    f.write(_formatear_error(err) + '\n')
             else:
                 f.write("No se encontraron errores.\n")
 
@@ -657,533 +664,288 @@ class AnalizadorLexico:
 # ===========================================================================
 
 class AnalizadorSemantico:
+    """Parser descendente: construye AST y comprueba tipos en una pasada.
+
+    PF2025 declara variables exclusivamente en el bloque global `decl`.
+    Cada primario apila un nodo tipado; cada operador reduce sus operandos.
+    La sentencia consume el resultado, dejando la pila vacia.
     """
-    Analizador semantico para el lenguaje PF2025.
-    Realiza comprobaciones de tipos, variables declaradas,
-    y validacion de sentencias en una sola pasada sobre la lista
-    de tokens generada por el analizador lexico.
-    Utiliza una pila semantica para evaluar tipos de expresiones.
-    """
+    TIPOS = {'ENT': 'ent', 'CAD': 'cad', 'BOOL': 'bool'}
+    PRECEDENCIA = {'O': 1, 'Y': 2, 'EQU': 4, 'DIF': 4, 'MAYOR': 4,
+                  'MENOR': 4, 'MAYIG': 4, 'MENIG': 4, 'MAS': 5,
+                  'MENOS': 5, 'MUL': 6, 'DIV': 6}
+    CIERRES = {'FIN', 'FINSI', 'SINO', 'FINMIENTRAS'}
 
     def __init__(self, lista_tokens, errores_lexicos):
         self.tokens = lista_tokens
+        self.errores_lexicos = errores_lexicos
+        self.lineas_con_error_lexico = {e['linea'] for e in errores_lexicos}
         self.pos = 0
         self.errores = []
         self.variables = {}
+        self.tabla_simbolos = {}  # tipo, ambito y coordenadas de declaracion
         self.pila_semantica = []
         self.ast_sentencias = []
-        self.errores_lexicos = errores_lexicos
-        self.lineas_con_error_lexico = set(
-            e['linea'] for e in errores_lexicos
-        )
+        self.ast = None
 
-    def _token_actual(self):
+    def _actual(self):
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
-        return None
+        ultimo = self.tokens[-1] if self.tokens else {'renglon': 1, 'columna': 1, 'lexema': ''}
+        return {'token': 'EOF', 'lexema': '', 'renglon': ultimo['renglon'],
+                'columna': ultimo['columna'] + len(ultimo['lexema'])}
 
-    def _avanzar(self):
-        tok = self.tokens[self.pos]
-        self.pos += 1
+    def _tomar(self):
+        tok = self._actual()
+        if tok['token'] != 'EOF':
+            self.pos += 1
         return tok
 
-    def _error(self, renglon, columna, descripcion, tipo_error, tipo_dato):
-        self.errores.append({
-            'renglon': renglon,
-            'columna': columna,
-            'tipo_error': tipo_error,
-            'tipo_dato': tipo_dato,
-            'descripcion': descripcion
-        })
-
-    def _saltar_hasta(self, tipos):
-        while self._token_actual() and self._token_actual()['token'] not in tipos:
-            self._avanzar()
-
-    def analizar(self):
-        self._parsear_encabezado()
-        self._parsear_declaraciones()
-        self._parsear_cuerpo()
-        print(f"[OK] Analisis semantico completado")
-        print(f"[OK] Variables declaradas: {len(self.variables)}")
-        print(f"[OK] Errores semanticos: {len(self.errores)}")
-        return self.errores
-
-    def _parsear_encabezado(self):
-        tok = self._token_actual()
-        if tok and tok['token'] == 'PROG':
-            self._avanzar()
-            if self._token_actual() and self._token_actual()['token'] == 'id':
-                self._avanzar()
-
-    def _parsear_declaraciones(self):
-        tok = self._token_actual()
-        if not tok or tok['token'] != 'DECL':
-            return
-        self._avanzar()
-
-        while True:
-            tok = self._token_actual()
-            if not tok or tok['token'] in ('INICIO', 'FIN'):
-                break
-            if tok['token'] in ('ENT', 'CAD', 'BOOL'):
-                tipo_tok = self._avanzar()
-                tipo = {'ENT': 'ent', 'CAD': 'cad', 'BOOL': 'bool'}[tipo_tok['token']]
-                self._parsear_lista_ids(tipo)
-            elif tok['token'] == 'PC':
-                self._avanzar()
-            else:
-                break
-
-    def _parsear_lista_ids(self, tipo):
-        while True:
-            tok = self._token_actual()
-            if not tok:
-                break
-            if tok['token'] == 'id':
-                self._avanzar()
-                nombre = tok['lexema']
-                if nombre in self.variables:
-                    self._error(tok['renglon'], tok['columna'],
-                                f"Variable declarada 2 veces: {nombre}",
-                                "Variable declarada 2 veces", tipo)
-                else:
-                    self.variables[nombre] = tipo
-                sig = self._token_actual()
-                if sig and sig['token'] == 'COMA':
-                    self._avanzar()
-                elif sig and sig['token'] == 'PC':
-                    self._avanzar()
-                    break
-                else:
-                    if tok['renglon'] in self.lineas_con_error_lexico:
-                        self._saltar_hasta(('PC',))
-                        if self._token_actual() and self._token_actual()['token'] == 'PC':
-                            self._avanzar()
-                    break
-            elif tok['token'] == 'PC':
-                self._avanzar()
-                break
-            elif tok['renglon'] in self.lineas_con_error_lexico:
-                self._saltar_hasta(('PC',))
-                if self._token_actual() and self._token_actual()['token'] == 'PC':
-                    self._avanzar()
-                break
-            else:
-                self._error(tok['renglon'], tok['columna'],
-                            "Se esperaba un identificador en la declaracion",
-                            "Error de sintaxis", "-")
-                self._saltar_hasta(('PC',))
-                if self._token_actual() and self._token_actual()['token'] == 'PC':
-                    self._avanzar()
-                break
-
-    def _parsear_cuerpo(self):
-        tok = self._token_actual()
-        if tok and tok['token'] == 'INICIO':
-            self._avanzar()
-        while True:
-            tok = self._token_actual()
-            if not tok or tok['token'] == 'FIN':
-                break
-            self._parsear_sentencia()
-
-    def _parsear_sentencia(self):
-        tok = self._token_actual()
-        if not tok:
-            return
-
-        if tok['token'] == 'id':
-            self._parsear_asignacion()
-        elif tok['token'] in ('LEERDIG', 'LEERCAD', 'IMPDIG', 'IMPCAD', 'IMPBOOL'):
-            self._parsear_llamada_funcion()
-        elif tok['token'] == 'SI':
-            self._parsear_condicional()
-        elif tok['token'] == 'MIENTRAS':
-            self._parsear_bucle()
-        else:
-            self._saltar_hasta(('PC',))
-            if self._token_actual() and self._token_actual()['token'] == 'PC':
-                self._avanzar()
-
-    def _parsear_asignacion(self):
-        id_tok = self._avanzar()
-        sig = self._token_actual()
-        if sig and sig['token'] == 'ASIG':
-            self._avanzar()
-            tipo_expr = self._parsear_expresion()
-            if id_tok['lexema'] not in self.variables:
-                self._error(id_tok['renglon'], id_tok['columna'],
-                            f"Variable no declarada: {id_tok['lexema']}",
-                            "Variable no declarada", "desconocido")
-            elif tipo_expr is not None and self.variables[id_tok['lexema']] != tipo_expr:
-                self._error(id_tok['renglon'], id_tok['columna'],
-                            f"Error de tipo en asignacion: se esperaba "
-                            f"'{self.variables[id_tok['lexema']]}', se obtuvo '{tipo_expr}'",
-                            "Error de tipo en asignacion",
-                            f"se esperaba '{self.variables[id_tok['lexema']]}', "
-                            f"se obtuvo '{tipo_expr}'")
-            if self._token_actual() and self._token_actual()['token'] == 'PC':
-                self._avanzar()
-        else:
-            self._error(id_tok['renglon'], id_tok['columna'],
-                        "Se esperaba ':=' despues del identificador",
-                        "Error de sintaxis", "-")
-            self._saltar_hasta(('PC',))
-            if self._token_actual() and self._token_actual()['token'] == 'PC':
-                self._avanzar()
-
-    def _parsear_llamada_funcion(self):
-        func_tok = self._avanzar()
-        if self._token_actual() and self._token_actual()['token'] == 'PAREN':
-            self._avanzar()
-
-        func = func_tok['token']
-        arg_tok = self._token_actual()
-
-        if func in ('LEERDIG', 'LEERCAD'):
-            if arg_tok and arg_tok['token'] == 'id':
-                self._avanzar()
-                nombre = arg_tok['lexema']
-                if nombre not in self.variables:
-                    self._error(arg_tok['renglon'], arg_tok['columna'],
-                                f"Variable no declarada: {nombre}",
-                                "Variable no declarada", "desconocido")
-                else:
-                    tipo_esperado = 'ent' if func == 'LEERDIG' else 'cad'
-                    if self.variables[nombre] != tipo_esperado:
-                        self._error(arg_tok['renglon'], arg_tok['columna'],
-                                    f"Error de tipo: se esperaba variable de tipo "
-                                    f"'{tipo_esperado}', pero '{nombre}' es de tipo "
-                                    f"'{self.variables[nombre]}'",
-                                    "Error de tipo en lectura",
-                                    f"se esperaba '{tipo_esperado}', "
-                                    f"se obtuvo '{self.variables[nombre]}'")
-            else:
-                self._parsear_expresion()
-        else:
-            tipo_arg = self._parsear_expresion()
-            if func == 'IMPCAD' and tipo_arg is not None and tipo_arg != 'cad':
-                self._error(arg_tok['renglon'], arg_tok['columna'],
-                            f"Error de tipo: se esperaba expresion de tipo 'cad', "
-                            f"se obtuvo '{tipo_arg}'",
-                            "Error de tipo en impresion",
-                            f"se esperaba 'cad', se obtuvo '{tipo_arg}'")
-
-        if self._token_actual() and self._token_actual()['token'] == 'TESIS':
-            self._avanzar()
-        if self._token_actual() and self._token_actual()['token'] == 'PC':
-            self._avanzar()
-
-    def _parsear_condicional(self):
-        si_tok = self._avanzar()
-        tipo_cond = self._parsear_expresion()
-        if tipo_cond is not None and tipo_cond != 'bool':
-            self._error(si_tok['renglon'], si_tok['columna'],
-                        f"La condicion del 'si' debe ser de tipo bool, "
-                        f"se obtuvo '{tipo_cond}'",
-                        "Error de tipo en condicional",
-                        f"se esperaba 'bool', se obtuvo '{tipo_cond}'")
-
-        if self._token_actual() and self._token_actual()['token'] == 'ENTONCES':
-            self._avanzar()
-
-        while self._token_actual() and self._token_actual()['token'] not in ('SINO', 'FINSI'):
-            self._parsear_sentencia()
-
-        if self._token_actual() and self._token_actual()['token'] == 'SINO':
-            self._avanzar()
-            while self._token_actual() and self._token_actual()['token'] != 'FINSI':
-                self._parsear_sentencia()
-
-        if self._token_actual() and self._token_actual()['token'] == 'FINSI':
-            self._avanzar()
-        if self._token_actual() and self._token_actual()['token'] == 'PC':
-            self._avanzar()
-
-    def _parsear_bucle(self):
-        mientras_tok = self._avanzar()
-        tipo_cond = self._parsear_expresion()
-        if tipo_cond is not None and tipo_cond != 'bool':
-            self._error(mientras_tok['renglon'], mientras_tok['columna'],
-                        f"La condicion del 'mientras' debe ser de tipo bool, "
-                        f"se obtuvo '{tipo_cond}'",
-                        "Error de tipo en bucle",
-                        f"se esperaba 'bool', se obtuvo '{tipo_cond}'")
-
-        if self._token_actual() and self._token_actual()['token'] == 'HACER':
-            self._avanzar()
-
-        while self._token_actual() and self._token_actual()['token'] != 'FINMIENTRAS':
-            self._parsear_sentencia()
-
-        if self._token_actual() and self._token_actual()['token'] == 'FINMIENTRAS':
-            self._avanzar()
-        if self._token_actual() and self._token_actual()['token'] == 'PC':
-            self._avanzar()
-
-    # =====================================================================
-    # EXPRESIONES - analisis de tipos con precedencia
-    # =====================================================================
-
-    def _parsear_expresion(self):
-        return self._parsear_or()
-
-    def _parsear_or(self):
-        tipo_izq = self._parsear_and()
-        while self._token_actual() and self._token_actual()['token'] == 'O':
-            op_tok = self._avanzar()
-            tipo_der = self._parsear_and()
-            if tipo_izq is not None and tipo_der is not None:
-                if tipo_izq != 'bool' or tipo_der != 'bool':
-                    self._error(op_tok['renglon'], op_tok['columna'],
-                                "Error de tipo: operador 'o' requiere operandos de tipo bool",
-                                "Error de tipo en expresion",
-                                f"se esperaba 'bool'/'bool', se obtuvo "
-                                f"'{tipo_izq}'/'{tipo_der}'")
-                    tipo_izq = None
-                else:
-                    self.pila_semantica.append(tipo_izq)
-                    self.pila_semantica.append(tipo_der)
-                    self.pila_semantica.pop()
-                    self.pila_semantica.pop()
-                    tipo_izq = 'bool'
-            else:
-                tipo_izq = None
-        return tipo_izq
-
-    def _parsear_and(self):
-        tipo_izq = self._parsear_not()
-        while self._token_actual() and self._token_actual()['token'] == 'Y':
-            op_tok = self._avanzar()
-            tipo_der = self._parsear_not()
-            if tipo_izq is not None and tipo_der is not None:
-                if tipo_izq != 'bool' or tipo_der != 'bool':
-                    self._error(op_tok['renglon'], op_tok['columna'],
-                                "Error de tipo: operador 'y' requiere operandos de tipo bool",
-                                "Error de tipo en expresion",
-                                f"se esperaba 'bool'/'bool', se obtuvo "
-                                f"'{tipo_izq}'/'{tipo_der}'")
-                    tipo_izq = None
-                else:
-                    self.pila_semantica.append(tipo_izq)
-                    self.pila_semantica.append(tipo_der)
-                    self.pila_semantica.pop()
-                    self.pila_semantica.pop()
-                    tipo_izq = 'bool'
-            else:
-                tipo_izq = None
-        return tipo_izq
-
-    def _parsear_not(self):
-        if self._token_actual() and self._token_actual()['token'] == 'NO':
-            op_tok = self._avanzar()
-            tipo = self._parsear_relacional()
-            if tipo is not None and tipo != 'bool':
-                self._error(op_tok['renglon'], op_tok['columna'],
-                            "Error de tipo: operador 'no' requiere operando de tipo bool",
-                            "Error de tipo en expresion",
-                            f"se esperaba 'bool', se obtuvo '{tipo}'")
-                return None
-            self.pila_semantica.append(tipo)
-            self.pila_semantica.pop()
-            return 'bool'
-        return self._parsear_relacional()
-
-    def _parsear_relacional(self):
-        tipo_izq = self._parsear_adicion()
-        if self._token_actual() and self._token_actual()['token'] in (
-                'EQU', 'DIF', 'MAYOR', 'MENOR', 'MAYIG', 'MENIG'):
-            op_tok = self._avanzar()
-            tipo_der = self._parsear_adicion()
-            op = op_tok['token']
-            if tipo_izq is not None and tipo_der is not None:
-                if op in ('EQU', 'DIF'):
-                    if tipo_izq != tipo_der:
-                        self._error(op_tok['renglon'], op_tok['columna'],
-                                    f"Error de tipo: operador '{op_tok['lexema']}' "
-                                    f"requiere operandos del mismo tipo",
-                                    "Error de tipo en expresion",
-                                    f"se esperaba mismo tipo, se obtuvo "
-                                    f"'{tipo_izq}'/'{tipo_der}'")
-                        return None
-                else:
-                    if tipo_izq != 'ent' or tipo_der != 'ent':
-                        self._error(op_tok['renglon'], op_tok['columna'],
-                                    f"Error de tipo: operador '{op_tok['lexema']}' "
-                                    f"requiere operandos de tipo ent",
-                                    "Error de tipo en expresion",
-                                    f"se esperaba 'ent'/'ent', se obtuvo "
-                                    f"'{tipo_izq}'/'{tipo_der}'")
-                        return None
-                self.pila_semantica.append(tipo_izq)
-                self.pila_semantica.append(tipo_der)
-                self.pila_semantica.pop()
-                self.pila_semantica.pop()
-                return 'bool'
-            return None
-        return tipo_izq
-
-    def _parsear_adicion(self):
-        tipo_izq = self._parsear_multiplicacion()
-        while self._token_actual() and self._token_actual()['token'] in ('MAS', 'MENOS'):
-            op_tok = self._avanzar()
-            tipo_der = self._parsear_multiplicacion()
-            if tipo_izq is not None and tipo_der is not None:
-                if tipo_izq != 'ent' or tipo_der != 'ent':
-                    self._error(op_tok['renglon'], op_tok['columna'],
-                                f"Error de tipo: operador '{op_tok['lexema']}' "
-                                f"requiere operandos de tipo ent",
-                                "Error de tipo en expresion",
-                                f"se esperaba 'ent'/'ent', se obtuvo "
-                                f"'{tipo_izq}'/'{tipo_der}'")
-                    tipo_izq = None
-                else:
-                    self.pila_semantica.append(tipo_izq)
-                    self.pila_semantica.append(tipo_der)
-                    self.pila_semantica.pop()
-                    self.pila_semantica.pop()
-                    tipo_izq = 'ent'
-            else:
-                tipo_izq = None
-        return tipo_izq
-
-    def _parsear_multiplicacion(self):
-        tipo_izq = self._parsear_unario()
-        while self._token_actual() and self._token_actual()['token'] in ('MUL', 'DIV'):
-            op_tok = self._avanzar()
-            tipo_der = self._parsear_unario()
-            if tipo_izq is not None and tipo_der is not None:
-                if tipo_izq != 'ent' or tipo_der != 'ent':
-                    self._error(op_tok['renglon'], op_tok['columna'],
-                                f"Error de tipo: operador '{op_tok['lexema']}' "
-                                f"requiere operandos de tipo ent",
-                                "Error de tipo en expresion",
-                                f"se esperaba 'ent'/'ent', se obtuvo "
-                                f"'{tipo_izq}'/'{tipo_der}'")
-                    tipo_izq = None
-                else:
-                    self.pila_semantica.append(tipo_izq)
-                    self.pila_semantica.append(tipo_der)
-                    self.pila_semantica.pop()
-                    self.pila_semantica.pop()
-                    tipo_izq = 'ent'
-            else:
-                tipo_izq = None
-        return tipo_izq
-
-    def _parsear_unario(self):
-        if self._token_actual() and self._token_actual()['token'] == 'MENOS':
-            op_tok = self._avanzar()
-            tipo = self._parsear_unario()
-            if tipo is not None and tipo != 'ent':
-                self._error(op_tok['renglon'], op_tok['columna'],
-                            "Error de tipo: operador '-' unario requiere operando de tipo ent",
-                            "Error de tipo en expresion",
-                            f"se esperaba 'ent', se obtuvo '{tipo}'")
-                return None
-            self.pila_semantica.append(tipo)
-            self.pila_semantica.pop()
-            return 'ent'
-        return self._parsear_primario()
-
-    def _parsear_primario(self):
-        tok = self._token_actual()
-        if not tok:
-            return None
-
-        if tok['token'] == 'CENT':
-            self._avanzar()
-            self.pila_semantica.append('ent')
-            return 'ent'
-
-        if tok['token'] == 'CAD_LIT':
-            self._avanzar()
-            self.pila_semantica.append('cad')
-            return 'cad'
-
-        if tok['token'] in ('VERDADERO', 'FALSO'):
-            self._avanzar()
-            self.pila_semantica.append('bool')
-            return 'bool'
-
-        if tok['token'] == 'id':
-            self._avanzar()
-            nombre = tok['lexema']
-            if nombre not in self.variables:
-                self._error(tok['renglon'], tok['columna'],
-                            f"Variable no declarada: {nombre}",
-                            "Variable no declarada", "desconocido")
-                return None
-            tipo = self.variables[nombre]
-            self.pila_semantica.append(tipo)
-            return tipo
-
-        if tok['token'] == 'PAREN':
-            self._avanzar()
-            tipo = self._parsear_expresion()
-            if self._token_actual() and self._token_actual()['token'] == 'TESIS':
-                self._avanzar()
-            return tipo
-
+    def _aceptar(self, tipo):
+        if self._actual()['token'] == tipo:
+            return self._tomar()
         return None
 
-    # =====================================================================
-    # GENERACION DEL ARCHIVO DE SALIDA .sem
-    # =====================================================================
+    def _error(self, tok, clase, descripcion, esperado=None, obtenido=None, fase='Semantico'):
+        self.errores.append({'renglon': tok['renglon'], 'columna': tok['columna'],
+            'fase': fase, 'tipo_error': clase, 'tipo_esperado': esperado,
+            'tipo_obtenido': obtenido,
+            'tipo_dato': f"esperado: {esperado or 'no aplica'}; obtenido: {obtenido or 'desconocido'}",
+            'descripcion': descripcion})
+
+    def _esperar(self, tipo):
+        tok = self._aceptar(tipo)
+        if tok:
+            return tok
+        self._error(self._actual(), 'Sintaxis invalida', f'Se esperaba {tipo}',
+                    fase='Sintactico')
+        return self._actual()
+
+    def _nodo(self, clase, tok, tipo=None, **datos):
+        return dict(clase=clase, lexema=tok['lexema'], renglon=tok['renglon'],
+                    columna=tok['columna'], tipo=tipo, **datos)
+
+    def _tipo_variable(self, tok):
+        simbolo = self.tabla_simbolos.get(tok['lexema'])
+        if simbolo is None:
+            self._error(tok, 'Variable no declarada',
+                        f"Variable no declarada: {tok['lexema']}", obtenido='desconocido')
+            return None
+        return simbolo['tipo']
+
+    def _comprobar(self, tok, esperado, obtenido, clase):
+        # None propaga un error previo sin generar incompatibilidades en cascada.
+        if obtenido is not None and obtenido != esperado:
+            self._error(tok, clase, f'Se esperaba {esperado}, se obtuvo {obtenido}',
+                        esperado, obtenido)
+
+    def analizar(self):
+        cabecera = self._esperar('PROG')
+        nombre = self._esperar('id')
+        declaraciones = []
+        if self._aceptar('DECL'):
+            while self._actual()['token'] not in {'INICIO', 'FIN', 'EOF'}:
+                inicio = self.pos
+                tipo_tok = self._tomar()
+                if tipo_tok['token'] not in self.TIPOS:
+                    self._error(tipo_tok, 'Declaracion invalida', 'Se esperaba Ent, cad o Bool', fase='Sintactico')
+                    self._recuperar()
+                    continue
+                tipo = self.TIPOS[tipo_tok['token']]
+                # Una declaracion lexicamente invalida no incorpora variables parciales.
+                fin = self.pos
+                while fin < len(self.tokens) and self.tokens[fin]['token'] not in {'PC', 'INICIO', 'FIN'}:
+                    fin += 1
+                tramo = self.tokens[inicio:min(fin + 1, len(self.tokens))]
+                if any(t['renglon'] in self.lineas_con_error_lexico for t in tramo):
+                    self.pos = fin
+                    self._aceptar('PC')
+                    continue
+                while True:
+                    if self._actual()['token'] != 'id':
+                        self._esperar('id')
+                        self._recuperar()
+                        break
+                    tok = self._tomar()
+                    nombre_var = tok['lexema']
+                    if nombre_var in self.tabla_simbolos:
+                        self._error(tok, 'Variable declarada 2 veces',
+                            f'Variable declarada 2 veces: {nombre_var}',
+                            self.tabla_simbolos[nombre_var]['tipo'], tipo)
+                    else:
+                        self.variables[nombre_var] = tipo
+                        self.tabla_simbolos[nombre_var] = dict(tipo=tipo, ambito='global',
+                            renglon=tok['renglon'], columna=tok['columna'])
+                    declaraciones.append(self._nodo('Declaracion', tok, tipo, ambito='global'))
+                    if not self._aceptar('COMA'):
+                        self._esperar('PC')
+                        break
+        self._esperar('INICIO')
+        self.ast_sentencias = self._bloque({'FIN'})
+        self._esperar('FIN')
+        if self._actual()['token'] != 'EOF':
+            self._error(self._actual(), 'Sintaxis invalida', 'Contenido despues de fin', fase='Sintactico')
+        self.ast = self._nodo('Programa', cabecera, nombre=nombre['lexema'],
+                             declaraciones=declaraciones, cuerpo=self.ast_sentencias)
+        print(f'[OK] Variables declaradas: {len(self.variables)}')
+        print(f'[OK] Errores de analisis sintactico/semantico: {len(self.errores)}')
+        return self.errores
+
+    def _recuperar(self):
+        while self._actual()['token'] not in self.CIERRES | {'PC', 'EOF', 'INICIO'}:
+            self._tomar()
+        self._aceptar('PC')
+
+    def _bloque(self, cierres):
+        nodos = []
+        while self._actual()['token'] not in cierres | self.CIERRES | {'EOF'}:
+            inicio = self.pos
+            nodo = self._sentencia()
+            if nodo:
+                nodos.append(nodo)
+            if self.pos == inicio:  # Garantiza progreso incluso en entradas invalidas.
+                self._tomar()
+        return nodos
+
+    def _sentencia(self):
+        tok = self._tomar()
+        clase = tok['token']
+        if clase == 'id':
+            tipo = self._tipo_variable(tok)
+            self._esperar('ASIG')
+            expr = self._expresion()
+            if tipo is not None:
+                self._comprobar(tok, tipo, expr['tipo'], 'Asignacion incompatible')
+            self._esperar('PC')
+            return self._nodo('Asignacion', tok, tipo, expresion=expr)
+        if clase in {'LEERDIG', 'LEERCAD', 'IMPDIG', 'IMPCAD', 'IMPBOOL'}:
+            self._esperar('PAREN')
+            arg_tok = self._actual()
+            expr = self._expresion()
+            if clase in {'LEERDIG', 'LEERCAD'}:
+                esperado = 'ent' if clase == 'LEERDIG' else 'cad'
+                if expr['clase'] != 'Variable':
+                    self._error(arg_tok, 'Argumento de lectura invalido',
+                        'La lectura requiere una variable, no una expresion o literal', esperado, expr['tipo'])
+                else:
+                    self._comprobar(arg_tok, esperado, expr['tipo'], 'Tipo incompatible en lectura')
+            elif clase == 'IMPCAD':
+                self._comprobar(arg_tok, 'cad', expr['tipo'], 'Tipo incompatible en impresion')
+            # impdig e impBool: se analiza el argumento, sin exigir un tipo particular.
+            self._esperar('TESIS')
+            self._esperar('PC')
+            return self._nodo('Llamada', tok, argumento=expr)
+        if clase in {'SI', 'MIENTRAS'}:
+            expr = self._expresion()
+            self._comprobar(tok, 'bool', expr['tipo'], 'Condicion incompatible')
+            self._esperar('ENTONCES' if clase == 'SI' else 'HACER')
+            cierre = 'FINSI' if clase == 'SI' else 'FINMIENTRAS'
+            cuerpo = self._bloque({cierre, 'SINO'} if clase == 'SI' else {cierre})
+            alternativo = []
+            if clase == 'SI' and self._aceptar('SINO'):
+                alternativo = self._bloque({'FINSI'})
+            self._esperar(cierre)
+            self._aceptar('PC')
+            return self._nodo('Si' if clase == 'SI' else 'Mientras', tok,
+                condicion=expr, cuerpo=cuerpo, alternativo=alternativo)
+        self._error(tok, 'Sentencia invalida', f"Sentencia inesperada: {tok['lexema']}", fase='Sintactico')
+        self._recuperar()
+        return self._nodo('Error', tok)
+
+    def _expresion(self):
+        base = len(self.pila_semantica)
+        self._subexpresion(1)
+        resultado = self.pila_semantica.pop()
+        assert len(self.pila_semantica) == base, 'Pila semantica desbalanceada'
+        return resultado
+
+    def _subexpresion(self, minimo):
+        tok = self._actual()
+        clase = tok['token']
+        if clase in {'NO', 'MENOS'}:
+            self._tomar()
+            self._subexpresion(3 if clase == 'NO' else 7)
+            self._reducir(tok, 1)
+        elif clase == 'PAREN':
+            self._tomar()
+            self._subexpresion(1)
+            self._esperar('TESIS')
+            hijo = self.pila_semantica.pop()
+            self.pila_semantica.append(self._nodo('Grupo', tok, hijo['tipo'], expresion=hijo))
+        elif clase in {'id', 'CENT', 'CAD_LIT', 'VERDADERO', 'FALSO'}:
+            self._tomar()
+            tipo = self._tipo_variable(tok) if clase == 'id' else {
+                'CENT': 'ent', 'CAD_LIT': 'cad', 'VERDADERO': 'bool', 'FALSO': 'bool'}[clase]
+            self.pila_semantica.append(self._nodo('Variable' if clase == 'id' else 'Literal', tok, tipo))
+        else:
+            self._error(tok, 'Expresion incompleta', 'Se esperaba un operando', fase='Sintactico')
+            self.pila_semantica.append(self._nodo('Error', tok))
+        relacional = False
+        while self.PRECEDENCIA.get(self._actual()['token'], 0) >= minimo:
+            op = self._tomar()
+            prioridad = self.PRECEDENCIA[op['token']]
+            if prioridad == 4 and relacional:
+                self._error(op, 'Comparacion encadenada', 'Use y/o para combinar comparaciones', fase='Sintactico')
+            relacional = relacional or prioridad == 4
+            self._subexpresion(prioridad + 1)
+            self._reducir(op, 2)
+
+    def _reducir(self, op, aridad):
+        """Consume operandos reales de la pila y apila el AST tipado resultante."""
+        hijos = [self.pila_semantica.pop() for _ in range(aridad)][::-1]
+        tipos = [h['tipo'] for h in hijos]
+        clase = op['token']
+        esperado = 'bool' if clase in {'Y', 'O', 'NO'} else 'ent'
+        igualdad = clase in {'EQU', 'DIF'}
+        resultado = None
+        if all(t is not None for t in tipos):
+            valido = len(set(tipos)) == 1 if igualdad else all(t == esperado for t in tipos)
+            if valido:
+                resultado = 'bool' if igualdad or clase in {'Y', 'O', 'NO', 'MAYOR', 'MENOR', 'MAYIG', 'MENIG'} else 'ent'
+            else:
+                self._error(op, 'Operandos incompatibles', f"Operandos invalidos para {op['lexema']}",
+                    'mismo tipo' if igualdad else '/'.join([esperado] * aridad), '/'.join(tipos))
+        self.pila_semantica.append(self._nodo('Unario' if aridad == 1 else 'Binario',
+                                            op, resultado, hijos=hijos))
 
     def generar_sem(self, ruta_salida):
+        errores = _errores_unificados(self.errores_lexicos, self.errores)
         with open(ruta_salida, 'w', encoding='utf-8') as f:
-            f.write("=" * 70 + "\n")
-            f.write("     ANALISIS SEMANTICO - ANALIZADOR LEXICO PF2025\n")
-            f.write("=" * 70 + "\n\n")
-
-            f.write("--- VARIABLES DECLARADAS ---\n")
-            f.write("-" * 70 + "\n")
-            for nombre, tipo in self.variables.items():
-                f.write(f"Variable: {nombre:<20} Tipo: {tipo}\n")
-            f.write(f"Total de variables declaradas: {len(self.variables)}\n\n")
-
-            errores = _errores_unificados(self.errores_lexicos, self.errores)
-            f.write("--- ERRORES ---\n")
-            f.write("-" * 70 + "\n")
-            if errores:
-                for err in errores:
-                    f.write(f"Renglon: {err['renglon']}, Columna: {err['columna']}, "
-                            f"{err['fase']}, Tipo de dato: {err['tipo_dato']}, "
-                            f"{err['descripcion']}\n")
-            else:
-                f.write("No se encontraron errores.\n")
-
-            f.write("\n" + "=" * 70 + "\n")
-            f.write(f"Total de errores: {len(errores)}\n")
-        print(f"[OK] Analisis semantico generado: {ruta_salida}")
+            f.write('ANALISIS SEMANTICO PF2025\n\n--- TABLA DE SIMBOLOS SEMANTICA ---\n')
+            for nombre, simbolo in self.tabla_simbolos.items():
+                f.write(f"Variable: {nombre}, Tipo: {simbolo['tipo']}, Ambito: {simbolo['ambito']}, "
+                        f"Declaracion: {simbolo['renglon']}:{simbolo['columna']}\n")
+            f.write(f'Total de variables declaradas: {len(self.variables)}\n\n--- ERRORES ---\n')
+            for error in errores:
+                f.write(_formatear_error(error) + '\n')
+            if not errores:
+                f.write('No se encontraron errores.\n')
+            f.write(f'Total de errores: {len(errores)}\n')
+        # AST anotado, serializable y revisable para la entrega.
+        with open(os.path.splitext(ruta_salida)[0] + '.ast.json', 'w', encoding='utf-8') as f:
+            json.dump(self.ast, f, ensure_ascii=False, indent=2)
 
 
-# ===========================================================================
-# ERRORES UNIFICADOS (lexicos y semanticos)
-# ===========================================================================
 def _errores_unificados(errores_lexicos, errores_semanticos):
-    """
-    Combina los errores lexicos y semanticos en una sola lista
-    ordenada por renglon y columna.
-    Cada error conserva: renglon, columna, fase, tipo de dato
-    y descripcion.
-    """
-    unificados = [
-        {'renglon': e['linea'], 'columna': e.get('columna', 0),
-         'fase': 'Lexico', 'tipo_dato': '-',
-         'descripcion': e['descripcion']}
-        for e in errores_lexicos
-    ]
-    unificados += [
-        {'renglon': e['renglon'], 'columna': e['columna'],
-         'fase': 'Semantico', 'tipo_dato': e.get('tipo_dato', '-'),
-         'descripcion': e['descripcion']}
-        for e in errores_semanticos
-    ]
-    unificados.sort(key=lambda e: (e['renglon'], e['columna']))
-    return unificados
+    """Preserva clasificacion, tipos y coordenadas de las tres fases."""
+    unificados = []
+    for error in errores_lexicos:
+        descripcion = error['descripcion']
+        clase = ('Comentario sin cierre' if descripcion.startswith('Comentario') else
+                 'Cadena sin cierre' if descripcion.startswith('Cadena') else
+                 'Identificador invalido' if 'identificador' in descripcion.lower() else
+                 'Simbolo no reconocido')
+        unificados.append(dict(renglon=error['linea'], columna=error['columna'],
+            fase='Lexico', tipo_error=clase, tipo_dato='no aplica',
+            tipo_esperado=None, tipo_obtenido=None, descripcion=descripcion))
+    unificados.extend(dict(error) for error in errores_semanticos)
+    return sorted(unificados, key=lambda e: (e['renglon'], e['columna']))
+
+
+def _formatear_error(error):
+    return (f"Renglon: {error['renglon']}, Columna: {error['columna']}, "
+            f"{error['fase']}, Tipo de error: {error['tipo_error']}, "
+            f"Tipo de dato: {error['tipo_dato']}, {error['descripcion']}")
 
 
 # ===========================================================================
@@ -1218,6 +980,8 @@ def main():
     archivo_tab = os.path.join(carpeta_salida, 'progfte.tab')
     archivo_tok = os.path.join(carpeta_salida, 'progfte.tok')
     archivo_sem = os.path.join(carpeta_salida, 'progfte.sem')
+
+    os.makedirs(carpeta_salida, exist_ok=True)
 
     # Crear instancia del analizador lexico
     analizador = AnalizadorLexico(archivo_entrada)
@@ -1265,15 +1029,13 @@ def main():
     print("=" * 70)
     if errores:
         for err in errores:
-            print(f"Renglon: {err['renglon']}, Columna: {err['columna']}, "
-                  f"{err['fase']}, Tipo de dato: {err['tipo_dato']}, "
-                  f"{err['descripcion']}")
+            print(_formatear_error(err))
     else:
         print("No se encontraron errores.")
     print("=" * 70)
 
     print("\n" + "=" * 70)
-    print("    PROCESO COMPLETADO EXITOSAMENTE")
+    print("    ANALISIS FINALIZADO")
     print(f"    Archivos generados en: {carpeta_salida}")
     print(f"    Total de errores: {len(errores)}")
     print("=" * 70)

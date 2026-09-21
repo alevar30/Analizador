@@ -1,0 +1,1021 @@
+{
+  "clase": "Programa",
+  "lexema": "pf2025",
+  "renglon": 1,
+  "columna": 1,
+  "tipo": null,
+  "nombre": "EjemploCalculadora",
+  "declaraciones": [
+    {
+      "clase": "Declaracion",
+      "lexema": "a",
+      "renglon": 4,
+      "columna": 5,
+      "tipo": "ent",
+      "ambito": "global"
+    },
+    {
+      "clase": "Declaracion",
+      "lexema": "b",
+      "renglon": 4,
+      "columna": 8,
+      "tipo": "ent",
+      "ambito": "global"
+    },
+    {
+      "clase": "Declaracion",
+      "lexema": "resultado",
+      "renglon": 4,
+      "columna": 11,
+      "tipo": "ent",
+      "ambito": "global"
+    },
+    {
+      "clase": "Declaracion",
+      "lexema": "esValido",
+      "renglon": 6,
+      "columna": 6,
+      "tipo": "bool",
+      "ambito": "global"
+    },
+    {
+      "clase": "Declaracion",
+      "lexema": "terminado",
+      "renglon": 6,
+      "columna": 16,
+      "tipo": "bool",
+      "ambito": "global"
+    }
+  ],
+  "cuerpo": [
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 9,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"Ingrese el primer numero\"",
+        "renglon": 9,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "leerdig",
+      "renglon": 10,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "a",
+        "renglon": 10,
+        "columna": 9,
+        "tipo": "ent"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 11,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"Ingrese el segundo numero\"",
+        "renglon": 11,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "leerdig",
+      "renglon": 12,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "b",
+        "renglon": 12,
+        "columna": 9,
+        "tipo": "ent"
+      }
+    },
+    {
+      "clase": "Asignacion",
+      "lexema": "resultado",
+      "renglon": 14,
+      "columna": 1,
+      "tipo": "ent",
+      "expresion": {
+        "clase": "Binario",
+        "lexema": "+",
+        "renglon": 14,
+        "columna": 16,
+        "tipo": "ent",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 14,
+            "columna": 14,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 14,
+            "columna": 18,
+            "tipo": "ent"
+          }
+        ]
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 15,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"El resultado de la suma es:\"",
+        "renglon": 15,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impdig",
+      "renglon": 16,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "resultado",
+        "renglon": 16,
+        "columna": 8,
+        "tipo": "ent"
+      }
+    },
+    {
+      "clase": "Asignacion",
+      "lexema": "resultado",
+      "renglon": 17,
+      "columna": 1,
+      "tipo": "ent",
+      "expresion": {
+        "clase": "Binario",
+        "lexema": "*",
+        "renglon": 17,
+        "columna": 16,
+        "tipo": "ent",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 17,
+            "columna": 14,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 17,
+            "columna": 18,
+            "tipo": "ent"
+          }
+        ]
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 18,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"El resultado de la multiplicacion es:\"",
+        "renglon": 18,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impdig",
+      "renglon": 19,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "resultado",
+        "renglon": 19,
+        "columna": 8,
+        "tipo": "ent"
+      }
+    },
+    {
+      "clase": "Asignacion",
+      "lexema": "resultado",
+      "renglon": 20,
+      "columna": 1,
+      "tipo": "ent",
+      "expresion": {
+        "clase": "Binario",
+        "lexema": "-",
+        "renglon": 20,
+        "columna": 16,
+        "tipo": "ent",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 20,
+            "columna": 14,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 20,
+            "columna": 18,
+            "tipo": "ent"
+          }
+        ]
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 21,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"El resultado de la resta es:\"",
+        "renglon": 21,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impdig",
+      "renglon": 22,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "resultado",
+        "renglon": 22,
+        "columna": 8,
+        "tipo": "ent"
+      }
+    },
+    {
+      "clase": "Asignacion",
+      "lexema": "resultado",
+      "renglon": 23,
+      "columna": 1,
+      "tipo": "ent",
+      "expresion": {
+        "clase": "Binario",
+        "lexema": "/",
+        "renglon": 23,
+        "columna": 16,
+        "tipo": "ent",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 23,
+            "columna": 14,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 23,
+            "columna": 18,
+            "tipo": "ent"
+          }
+        ]
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 24,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"El resultado de la division es:\"",
+        "renglon": 24,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impdig",
+      "renglon": 25,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "resultado",
+        "renglon": 25,
+        "columna": 8,
+        "tipo": "ent"
+      }
+    },
+    {
+      "clase": "Asignacion",
+      "lexema": "esValido",
+      "renglon": 27,
+      "columna": 1,
+      "tipo": "bool",
+      "expresion": {
+        "clase": "Literal",
+        "lexema": "verdadero",
+        "renglon": 27,
+        "columna": 13,
+        "tipo": "bool"
+      }
+    },
+    {
+      "clase": "Asignacion",
+      "lexema": "terminado",
+      "renglon": 28,
+      "columna": 1,
+      "tipo": "bool",
+      "expresion": {
+        "clase": "Literal",
+        "lexema": "falso",
+        "renglon": 28,
+        "columna": 14,
+        "tipo": "bool"
+      }
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 30,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": "==",
+        "renglon": 30,
+        "columna": 6,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 30,
+            "columna": 4,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 30,
+            "columna": 9,
+            "tipo": "ent"
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 31,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"Los numeros son iguales\"",
+            "renglon": 31,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 33,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"Los numeros son diferentes\"",
+            "renglon": 33,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ]
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 35,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": "!=",
+        "renglon": 35,
+        "columna": 6,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 35,
+            "columna": 4,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 35,
+            "columna": 9,
+            "tipo": "ent"
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 36,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"Los numeros son diferentes\"",
+            "renglon": 36,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 38,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": ">",
+        "renglon": 38,
+        "columna": 6,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 38,
+            "columna": 4,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 38,
+            "columna": 8,
+            "tipo": "ent"
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 39,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"El primer numero es mayor\"",
+            "renglon": 39,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 41,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": "<",
+        "renglon": 41,
+        "columna": 6,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 41,
+            "columna": 4,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 41,
+            "columna": 8,
+            "tipo": "ent"
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 42,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"El segundo numero es mayor\"",
+            "renglon": 42,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 44,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": ">=",
+        "renglon": 44,
+        "columna": 6,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 44,
+            "columna": 4,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 44,
+            "columna": 9,
+            "tipo": "ent"
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 45,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"El primer numero es mayor o igual\"",
+            "renglon": 45,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 47,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": "<=",
+        "renglon": 47,
+        "columna": 6,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 47,
+            "columna": 4,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 47,
+            "columna": 9,
+            "tipo": "ent"
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 48,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"El segundo numero es mayor o igual\"",
+            "renglon": 48,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 51,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": "y",
+        "renglon": 51,
+        "columna": 10,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Binario",
+            "lexema": ">",
+            "renglon": 51,
+            "columna": 6,
+            "tipo": "bool",
+            "hijos": [
+              {
+                "clase": "Variable",
+                "lexema": "a",
+                "renglon": 51,
+                "columna": 4,
+                "tipo": "ent"
+              },
+              {
+                "clase": "Variable",
+                "lexema": "b",
+                "renglon": 51,
+                "columna": 8,
+                "tipo": "ent"
+              }
+            ]
+          },
+          {
+            "clase": "Binario",
+            "lexema": ">",
+            "renglon": 51,
+            "columna": 14,
+            "tipo": "bool",
+            "hijos": [
+              {
+                "clase": "Variable",
+                "lexema": "b",
+                "renglon": 51,
+                "columna": 12,
+                "tipo": "ent"
+              },
+              {
+                "clase": "Literal",
+                "lexema": "0",
+                "renglon": 51,
+                "columna": 16,
+                "tipo": "ent"
+              }
+            ]
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 52,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"a es mayor y b es positivo\"",
+            "renglon": 52,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 54,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": "o",
+        "renglon": 54,
+        "columna": 11,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Binario",
+            "lexema": "==",
+            "renglon": 54,
+            "columna": 6,
+            "tipo": "bool",
+            "hijos": [
+              {
+                "clase": "Variable",
+                "lexema": "a",
+                "renglon": 54,
+                "columna": 4,
+                "tipo": "ent"
+              },
+              {
+                "clase": "Variable",
+                "lexema": "b",
+                "renglon": 54,
+                "columna": 9,
+                "tipo": "ent"
+              }
+            ]
+          },
+          {
+            "clase": "Binario",
+            "lexema": "==",
+            "renglon": 54,
+            "columna": 15,
+            "tipo": "bool",
+            "hijos": [
+              {
+                "clase": "Variable",
+                "lexema": "b",
+                "renglon": 54,
+                "columna": 13,
+                "tipo": "ent"
+              },
+              {
+                "clase": "Literal",
+                "lexema": "0",
+                "renglon": 54,
+                "columna": 18,
+                "tipo": "ent"
+              }
+            ]
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 55,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"a es igual a b o b es cero\"",
+            "renglon": 55,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 57,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Unario",
+        "lexema": "no",
+        "renglon": 57,
+        "columna": 4,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "esValido",
+            "renglon": 57,
+            "columna": 7,
+            "tipo": "bool"
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 58,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"esValido es falso\"",
+            "renglon": 58,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Si",
+      "lexema": "si",
+      "renglon": 60,
+      "columna": 1,
+      "tipo": null,
+      "condicion": {
+        "clase": "Binario",
+        "lexema": "y",
+        "renglon": 60,
+        "columna": 17,
+        "tipo": "bool",
+        "hijos": [
+          {
+            "clase": "Unario",
+            "lexema": "no",
+            "renglon": 60,
+            "columna": 4,
+            "tipo": "bool",
+            "hijos": [
+              {
+                "clase": "Variable",
+                "lexema": "terminado",
+                "renglon": 60,
+                "columna": 7,
+                "tipo": "bool"
+              }
+            ]
+          },
+          {
+            "clase": "Binario",
+            "lexema": ">",
+            "renglon": 60,
+            "columna": 21,
+            "tipo": "bool",
+            "hijos": [
+              {
+                "clase": "Variable",
+                "lexema": "a",
+                "renglon": 60,
+                "columna": 19,
+                "tipo": "ent"
+              },
+              {
+                "clase": "Literal",
+                "lexema": "0",
+                "renglon": 60,
+                "columna": 23,
+                "tipo": "ent"
+              }
+            ]
+          }
+        ]
+      },
+      "cuerpo": [
+        {
+          "clase": "Llamada",
+          "lexema": "impcad",
+          "renglon": 61,
+          "columna": 5,
+          "tipo": null,
+          "argumento": {
+            "clase": "Literal",
+            "lexema": "\"El programa continua\"",
+            "renglon": 61,
+            "columna": 12,
+            "tipo": "cad"
+          }
+        }
+      ],
+      "alternativo": []
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 64,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"Ingrese su nombre:\"",
+        "renglon": 64,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "leercad",
+      "renglon": 65,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "nombreUsuario",
+        "renglon": 65,
+        "columna": 9,
+        "tipo": null
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 66,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Literal",
+        "lexema": "\"Hola usuario:\"",
+        "renglon": 66,
+        "columna": 8,
+        "tipo": "cad"
+      }
+    },
+    {
+      "clase": "Llamada",
+      "lexema": "impcad",
+      "renglon": 67,
+      "columna": 1,
+      "tipo": null,
+      "argumento": {
+        "clase": "Variable",
+        "lexema": "nombreUsuario",
+        "renglon": 67,
+        "columna": 8,
+        "tipo": null
+      }
+    },
+    {
+      "clase": "Asignacion",
+      "lexema": "resultado",
+      "renglon": 68,
+      "columna": 1,
+      "tipo": "ent",
+      "expresion": {
+        "clase": "Binario",
+        "lexema": "+",
+        "renglon": 68,
+        "columna": 16,
+        "tipo": "ent",
+        "hijos": [
+          {
+            "clase": "Variable",
+            "lexema": "a",
+            "renglon": 68,
+            "columna": 14,
+            "tipo": "ent"
+          },
+          {
+            "clase": "Variable",
+            "lexema": "b",
+            "renglon": 68,
+            "columna": 18,
+            "tipo": "ent"
+          }
+        ]
+      }
+    }
+  ]
+}

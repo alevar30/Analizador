@@ -890,6 +890,31 @@ class AnalizadorSemantico:
             self._subexpresion(prioridad + 1)
             self._reducir(op, 2)
 
+    def _valor_constante(self, nodo):
+        """Valor entero estatico de un nodo; None si depende de variables o ya contiene un error."""
+        if nodo['clase'] == 'Literal' and nodo['tipo'] == 'ent':
+            return int(nodo['lexema'])
+        if nodo['clase'] == 'Grupo':
+            return self._valor_constante(nodo['expresion'])
+        if nodo['clase'] == 'Unario' and nodo['lexema'] == '-':
+            valor = self._valor_constante(nodo['hijos'][0])
+            return None if valor is None else -valor
+        if nodo['clase'] == 'Binario' and nodo['lexema'] in ('+', '-', '*', '/'):
+            izquierda = self._valor_constante(nodo['hijos'][0])
+            derecha = self._valor_constante(nodo['hijos'][1])
+            if izquierda is None or derecha is None:
+                return None
+            if nodo['lexema'] == '+':
+                return izquierda + derecha
+            if nodo['lexema'] == '-':
+                return izquierda - derecha
+            if nodo['lexema'] == '*':
+                return izquierda * derecha
+            if derecha == 0:  # division por cero interna ya reportada
+                return None
+            return izquierda // derecha
+        return None
+
     def _reducir(self, op, aridad):
         """Consume operandos reales de la pila y apila el AST tipado resultante."""
         hijos = [self.pila_semantica.pop() for _ in range(aridad)][::-1]
@@ -905,6 +930,9 @@ class AnalizadorSemantico:
             else:
                 self._error(op, 'Operandos incompatibles', f"Operandos invalidos para {op['lexema']}",
                     'mismo tipo' if igualdad else '/'.join([esperado] * aridad), '/'.join(tipos))
+        if clase == 'DIV' and self._valor_constante(hijos[1]) == 0:
+            self._error(op, 'Division por cero', 'Division por cero: no se puede dividir entre cero',
+                        'divisor distinto de cero', '0')
         self.pila_semantica.append(self._nodo('Unario' if aridad == 1 else 'Binario',
                                             op, resultado, hijos=hijos))
 
@@ -943,8 +971,8 @@ def _errores_unificados(errores_lexicos, errores_semanticos):
 
 
 def _formatear_error(error):
-    return (f"Renglon: {error['renglon']}, Columna: {error['columna']}, "
-            f"{error['fase']}, Tipo de error: {error['tipo_error']}, "
+    return (f"Renglon: {error['renglon']}, "
+            f"Tipo de error: {error['tipo_error']}, "
             f"Tipo de dato: {error['tipo_dato']}, {error['descripcion']}")
 
 

@@ -24,7 +24,7 @@ El analizador localiza sus archivos respecto a `src/analizador_lexico.py`, indep
 | `salida/progfte.tok` | Tokens y errores unificados |
 | `salida/progfte.sem` | Tabla semántica, ámbito, declaraciones y errores |
 | `salida/progfte.ast.json` | AST jerárquico anotado con tipos y posiciones |
-| `tests/test_rubrica.py` | 19 pruebas de aceptación, con casos adicionales por subprueba |
+| `tests/test_rubrica.py` | 20 pruebas de aceptación, con casos adicionales por subprueba |
 | `documentacion_semantica.md` | Informe editable |
 | `docs/generar_pdf.py` | Generador del informe; requiere ReportLab |
 | `output/pdf/Documentacion_PF2025.pdf` | Informe sin portada |
@@ -60,7 +60,7 @@ fin
 - Cadenas de una línea entre comillas dobles, sin escapes. Comentarios `/* ... */`, no anidados.
 - Columnas desde 1 sobre caracteres originales; un tabulador cuenta como un carácter.
 
-Cada error incluye renglón, columna, fase, tipo de error, tipos implicados y descripción. Los errores de sintaxis se identifican como `Sintactico`, sin confundirlos con errores léxicos o semánticos.
+Cada error se imprime con renglón, tipo de error, tipos implicados y descripción; la fase (`Lexico`/`Sintactico`/`Semantico`) y la columna se conservan internamente para clasificación, orden y AST. La división entre un divisor constante igual a cero (`0`, `(0)`, `-0` o expresión aritmética constante) se reporta como `Division por cero`; un divisor variable no puede evaluarse estáticamente.
 
 ## Generar el informe
 

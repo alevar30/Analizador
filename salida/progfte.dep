@@ -17,7 +17,7 @@ impdig(resultado);
 resultado := a - b;
 impcad("El resultado de la resta es:");
 impdig(resultado);
-resultado := a / b;
+resultado := a / 0;
 impcad("El resultado de la division es:");
 impdig(resultado);
 esValido := verdadero;

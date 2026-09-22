@@ -32,27 +32,27 @@ No     LEXEMA                    TOKEN           REF
 27     -                         MENOS           506   
 28     "El resultado de la resta es:" CAD_LIT         804   
 29     /                         DIV             508   
-30     "El resultado de la division es:" CAD_LIT         805   
-31     verdadero                 VERDADERO       116   
-32     falso                     FALSO           117   
-33     si                        SI              104   
-34     ==                        EQU             513   
-35     entonces                  ENTONCES        105   
-36     "Los numeros son iguales" CAD_LIT         806   
-37     sino                      SINO            106   
-38     "Los numeros son diferentes" CAD_LIT         807   
-39     finsi                     FINSI           107   
-40     !=                        DIF             514   
-41     >                         MAYOR           509   
-42     "El primer numero es mayor" CAD_LIT         808   
-43     <                         MENOR           510   
-44     "El segundo numero es mayor" CAD_LIT         809   
-45     >=                        MAYIG           511   
-46     "El primer numero es mayor o igual" CAD_LIT         810   
-47     <=                        MENIG           512   
-48     "El segundo numero es mayor o igual" CAD_LIT         811   
-49     y                         Y               118   
-50     0                         CENT            700   
+30     0                         CENT            700   
+31     "El resultado de la division es:" CAD_LIT         805   
+32     verdadero                 VERDADERO       116   
+33     falso                     FALSO           117   
+34     si                        SI              104   
+35     ==                        EQU             513   
+36     entonces                  ENTONCES        105   
+37     "Los numeros son iguales" CAD_LIT         806   
+38     sino                      SINO            106   
+39     "Los numeros son diferentes" CAD_LIT         807   
+40     finsi                     FINSI           107   
+41     !=                        DIF             514   
+42     >                         MAYOR           509   
+43     "El primer numero es mayor" CAD_LIT         808   
+44     <                         MENOR           510   
+45     "El segundo numero es mayor" CAD_LIT         809   
+46     >=                        MAYIG           511   
+47     "El primer numero es mayor o igual" CAD_LIT         810   
+48     <=                        MENIG           512   
+49     "El segundo numero es mayor o igual" CAD_LIT         811   
+50     y                         Y               118   
 51     "a es mayor y b es positivo" CAD_LIT         812   
 52     o                         O               119   
 53     "a es igual a b o b es cero" CAD_LIT         813   

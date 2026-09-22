@@ -6,7 +6,7 @@ Lexical + semantic analyzer for the educational language **PF2025** (Lenguajes y
 ## Commands
 - Run the analyzer: `python3 src/analizador_lexico.py` (run from the project dir; paths resolve relative to the script location, so CWD is irrelevant).
 - It reads `entrada/progfte.txt` and overwrites `salida/progfte.{dep,tab,tok,sem,ast.json}` on every run. Treat `salida/` as generated output — never edit by hand.
-- Run tests: `python -B -m unittest discover -s tests -v` (19 tests with subcases).
+- Run tests: `python -B -m unittest discover -s tests -v` (20 tests with subcases).
 - Verify by running the script and checking the trailer (`Total de errores`). With the current input this is 273 tokens and 3 errors total (rows 5, 65, 67).
 
 ## PF2025 quirks
@@ -17,7 +17,8 @@ Lexical + semantic analyzer for the educational language **PF2025** (Lenguajes y
 
 ## Gotchas
 - NEVER modify `entrada/progfte.txt` — it is the fixed source input for the practice and grading.
-- Errors from both phases are merged into a single list (`_errores_unificados`), one per line in `Renglon: N, Columna: N, fase, Tipo de error: X, Tipo de dato: X, descripcion` format, written to `.tok`, `.sem`, and console. `generar_tok` therefore runs AFTER semantic analysis and receives the semantic errors as an argument.
+- Errors from both phases are merged into a single list (`_errores_unificados`), one per line in `Renglon: N, Tipo de error: X, Tipo de dato: X, descripcion` format (no phase or column in the printed line; both are kept internally for classification, sorting, AST, and declaration positions), written to `.tok`, `.sem`, and console. `generar_tok` therefore runs AFTER semantic analysis and receives the semantic errors as an argument.
+- Division by a statically-known zero divisor (literal `0`, `(0)`, `-0`, or folded constant arithmetic via `_valor_constante`) is reported as `Division por cero` in `_reducir`; variable divisors are runtime values and stay unchecked.
 - Original coordinates come from `lineas_lexicas` (comments replaced with spaces). `.dep` is only a normalized display. Tabs count as one character.
 - Syntax diagnostics use phase `Sintactico`; semantic errors use `Semantico`.
 - AST nodes are reduced on `pila_semantica`; completed expressions leave it balanced. The semantic symbol table stores global scope and declaration positions.

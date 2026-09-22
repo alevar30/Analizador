@@ -299,8 +299,8 @@
             "tipo": "ent"
           },
           {
-            "clase": "Variable",
-            "lexema": "b",
+            "clase": "Literal",
+            "lexema": "0",
             "renglon": 23,
             "columna": 18,
             "tipo": "ent"

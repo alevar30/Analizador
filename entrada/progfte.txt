@@ -2,14 +2,18 @@ pf2025 EjemploCalculadora
 decl
 /* Comentario: Declaracion de variables enteras */
 Ent a, b, resultado;
-cad nombre@Usuario;
+
+cad nombreUsuario;
 Bool esValido, terminado;
 inicio
 /* ---- Seccion 1: Entrada y salida de datos ---- */
 impcad("Ingrese el primer numero");
 leerdig(a);
 impcad("Ingrese el segundo numero");
-leerdig(b);
+leerdig(nombreUsuario);
+
+a := 10;
+b := 2;
 /* ---- Seccion 2: Operaciones aritmeticas ---- */
 resultado := a + b;
 impcad("El resultado de la suma es:");
@@ -20,7 +24,10 @@ impdig(resultado);
 resultado := a - b;
 impcad("El resultado de la resta es:");
 impdig(resultado);
-resultado := a / 0;
+resultado := a / b;
+
+resultado := a / (b - 2);
+
 impcad("El resultado de la division es:");
 impdig(resultado);
 /* ---- Seccion 3: Asignacion booleana ---- */

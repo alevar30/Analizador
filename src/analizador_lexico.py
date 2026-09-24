@@ -775,7 +775,7 @@ class AnalizadorSemantico:
                     else:
                         self.variables[nombre_var] = tipo
                         self.tabla_simbolos[nombre_var] = dict(tipo=tipo, ambito='global',
-                            renglon=tok['renglon'], columna=tok['columna'])
+                            renglon=tok['renglon'], columna=tok['columna'], valor=None)
                     declaraciones.append(self._nodo('Declaracion', tok, tipo, ambito='global'))
                     if not self._aceptar('COMA'):
                         self._esperar('PC')
@@ -816,6 +816,8 @@ class AnalizadorSemantico:
             expr = self._expresion()
             if tipo is not None:
                 self._comprobar(tok, tipo, expr['tipo'], 'Asignacion incompatible')
+                # Propagacion de constantes: registra el valor estatico de la expresion.
+                self.tabla_simbolos[tok['lexema']]['valor'] = self._valor_constante(expr)
             self._esperar('PC')
             return self._nodo('Asignacion', tok, tipo, expresion=expr)
         if clase in {'LEERDIG', 'LEERCAD', 'IMPDIG', 'IMPCAD', 'IMPBOOL'}:
@@ -829,6 +831,9 @@ class AnalizadorSemantico:
                         'La lectura requiere una variable, no una expresion o literal', esperado, expr['tipo'])
                 else:
                     self._comprobar(arg_tok, esperado, expr['tipo'], 'Tipo incompatible en lectura')
+                    simbolo = self.tabla_simbolos.get(expr['lexema'])
+                    if simbolo is not None:
+                        simbolo['valor'] = None  # el dato llega en ejecucion
             elif clase == 'IMPCAD':
                 self._comprobar(arg_tok, 'cad', expr['tipo'], 'Tipo incompatible en impresion')
             # impdig e impBool: se analiza el argumento, sin exigir un tipo particular.
@@ -840,12 +845,17 @@ class AnalizadorSemantico:
             self._comprobar(tok, 'bool', expr['tipo'], 'Condicion incompatible')
             self._esperar('ENTONCES' if clase == 'SI' else 'HACER')
             cierre = 'FINSI' if clase == 'SI' else 'FINMIENTRAS'
+            valores_previos = {n: s.get('valor') for n, s in self.tabla_simbolos.items()}
             cuerpo = self._bloque({cierre, 'SINO'} if clase == 'SI' else {cierre})
             alternativo = []
             if clase == 'SI' and self._aceptar('SINO'):
                 alternativo = self._bloque({'FINSI'})
             self._esperar(cierre)
             self._aceptar('PC')
+            # Una asignacion condicional no garantiza su valor al salir del bloque.
+            for nombre, previo in valores_previos.items():
+                if self.tabla_simbolos[nombre].get('valor') != previo:
+                    self.tabla_simbolos[nombre]['valor'] = None
             return self._nodo('Si' if clase == 'SI' else 'Mientras', tok,
                 condicion=expr, cuerpo=cuerpo, alternativo=alternativo)
         self._error(tok, 'Sentencia invalida', f"Sentencia inesperada: {tok['lexema']}", fase='Sintactico')
@@ -859,6 +869,11 @@ class AnalizadorSemantico:
         assert len(self.pila_semantica) == base, 'Pila semantica desbalanceada'
         return resultado
 
+    def _apilar_expresion(self, nodo):
+        """Anota el valor estatico del nodo y lo apila en la pila semantica."""
+        nodo['valor'] = self._valor_constante(nodo)
+        self.pila_semantica.append(nodo)
+
     def _subexpresion(self, minimo):
         tok = self._actual()
         clase = tok['token']
@@ -871,15 +886,15 @@ class AnalizadorSemantico:
             self._subexpresion(1)
             self._esperar('TESIS')
             hijo = self.pila_semantica.pop()
-            self.pila_semantica.append(self._nodo('Grupo', tok, hijo['tipo'], expresion=hijo))
+            self._apilar_expresion(self._nodo('Grupo', tok, hijo['tipo'], expresion=hijo))
         elif clase in {'id', 'CENT', 'CAD_LIT', 'VERDADERO', 'FALSO'}:
             self._tomar()
             tipo = self._tipo_variable(tok) if clase == 'id' else {
                 'CENT': 'ent', 'CAD_LIT': 'cad', 'VERDADERO': 'bool', 'FALSO': 'bool'}[clase]
-            self.pila_semantica.append(self._nodo('Variable' if clase == 'id' else 'Literal', tok, tipo))
+            self._apilar_expresion(self._nodo('Variable' if clase == 'id' else 'Literal', tok, tipo))
         else:
             self._error(tok, 'Expresion incompleta', 'Se esperaba un operando', fase='Sintactico')
-            self.pila_semantica.append(self._nodo('Error', tok))
+            self._apilar_expresion(self._nodo('Error', tok))
         relacional = False
         while self.PRECEDENCIA.get(self._actual()['token'], 0) >= minimo:
             op = self._tomar()
@@ -891,9 +906,12 @@ class AnalizadorSemantico:
             self._reducir(op, 2)
 
     def _valor_constante(self, nodo):
-        """Valor entero estatico de un nodo; None si depende de variables o ya contiene un error."""
+        """Valor entero estatico de un nodo; None si depende de datos desconocidos o ya contiene un error."""
         if nodo['clase'] == 'Literal' and nodo['tipo'] == 'ent':
             return int(nodo['lexema'])
+        if nodo['clase'] == 'Variable':
+            simbolo = self.tabla_simbolos.get(nodo['lexema'])
+            return simbolo.get('valor') if simbolo else None
         if nodo['clase'] == 'Grupo':
             return self._valor_constante(nodo['expresion'])
         if nodo['clase'] == 'Unario' and nodo['lexema'] == '-':
@@ -933,16 +951,17 @@ class AnalizadorSemantico:
         if clase == 'DIV' and self._valor_constante(hijos[1]) == 0:
             self._error(op, 'Division por cero', 'Division por cero: no se puede dividir entre cero',
                         'divisor distinto de cero', '0')
-        self.pila_semantica.append(self._nodo('Unario' if aridad == 1 else 'Binario',
-                                            op, resultado, hijos=hijos))
+        self._apilar_expresion(self._nodo('Unario' if aridad == 1 else 'Binario',
+                                        op, resultado, hijos=hijos))
 
     def generar_sem(self, ruta_salida):
         errores = _errores_unificados(self.errores_lexicos, self.errores)
         with open(ruta_salida, 'w', encoding='utf-8') as f:
             f.write('ANALISIS SEMANTICO PF2025\n\n--- TABLA DE SIMBOLOS SEMANTICA ---\n')
             for nombre, simbolo in self.tabla_simbolos.items():
+                valor = 'desconocido' if simbolo.get('valor') is None else simbolo['valor']
                 f.write(f"Variable: {nombre}, Tipo: {simbolo['tipo']}, Ambito: {simbolo['ambito']}, "
-                        f"Declaracion: {simbolo['renglon']}:{simbolo['columna']}\n")
+                        f"Declaracion: {simbolo['renglon']}:{simbolo['columna']}, Valor: {valor}\n")
             f.write(f'Total de variables declaradas: {len(self.variables)}\n\n--- ERRORES ---\n')
             for error in errores:
                 f.write(_formatear_error(error) + '\n')
@@ -971,7 +990,7 @@ def _errores_unificados(errores_lexicos, errores_semanticos):
 
 
 def _formatear_error(error):
-    return (f"Renglon: {error['renglon']}, "
+    return (f"Renglon: {error['renglon']}, Columna: {error['columna']}, "
             f"Tipo de error: {error['tipo_error']}, "
             f"Tipo de dato: {error['tipo_dato']}, {error['descripcion']}")
 

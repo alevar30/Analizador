@@ -1,13 +1,15 @@
 pf2025 EjemploCalculadora
 decl
 Ent a, b, resultado;
-cad nombre@Usuario;
+cad nombreUsuario;
 Bool esValido, terminado;
 inicio
 impcad("Ingrese el primer numero");
 leerdig(a);
 impcad("Ingrese el segundo numero");
-leerdig(b);
+leerdig(nombreUsuario);
+a := 10;
+b := 2;
 resultado := a + b;
 impcad("El resultado de la suma es:");
 impdig(resultado);
@@ -17,7 +19,8 @@ impdig(resultado);
 resultado := a - b;
 impcad("El resultado de la resta es:");
 impdig(resultado);
-resultado := a / 0;
+resultado := a / b;
+resultado := a / (b - 2);
 impcad("El resultado de la division es:");
 impdig(resultado);
 esValido := verdadero;

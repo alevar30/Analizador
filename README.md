@@ -8,7 +8,6 @@ Desde esta carpeta:
 
 ```powershell
 python src/analizador_lexico.py
-python -B -m unittest discover -s tests -v
 ```
 
 El analizador localiza sus archivos respecto a `src/analizador_lexico.py`, independientemente del directorio de ejecución. **No modificar `entrada/progfte.txt`**, entrada fija de la práctica.
@@ -22,14 +21,13 @@ El analizador localiza sus archivos respecto a `src/analizador_lexico.py`, indep
 | `salida/progfte.dep` | Vista del código sin comentarios y con espacios normalizados |
 | `salida/progfte.tab` | Tabla léxica: lexema, token y referencia |
 | `salida/progfte.tok` | Tokens y errores unificados |
-| `salida/progfte.sem` | Tabla semántica, ámbito, declaraciones y errores |
-| `salida/progfte.ast.json` | AST jerárquico anotado con tipos y posiciones |
-| `tests/test_rubrica.py` | 20 pruebas de aceptación, con casos adicionales por subprueba |
+| `salida/progfte.sem` | Tabla semántica: ámbito, declaraciones, valor propagado y errores |
+| `salida/progfte.ast.json` | AST jerárquico con tipos, posiciones y valores constantes |
 | `documentacion_semantica.md` | Informe editable |
 | `docs/generar_pdf.py` | Generador del informe; requiere ReportLab |
 | `output/pdf/Documentacion_PF2025.pdf` | Informe sin portada |
 
-Los archivos de salida son generados automáticamente. El ejemplo conserva **273 tokens, 61 símbolos, 5 variables y 3 errores**: uno léxico en el renglón 5 y dos semánticos en los renglones 65 y 67.
+Los archivos de salida son generados automáticamente. El ejemplo conserva **292 tokens, 64 símbolos, 6 variables y 3 errores**: lectura incompatible en el renglón 13, división por cero en el 29 y operandos incompatibles en el 75.
 
 ## Lenguaje
 
@@ -60,7 +58,7 @@ fin
 - Cadenas de una línea entre comillas dobles, sin escapes. Comentarios `/* ... */`, no anidados.
 - Columnas desde 1 sobre caracteres originales; un tabulador cuenta como un carácter.
 
-Cada error se imprime con renglón, tipo de error, tipos implicados y descripción; la fase (`Lexico`/`Sintactico`/`Semantico`) y la columna se conservan internamente para clasificación, orden y AST. La división entre un divisor constante igual a cero (`0`, `(0)`, `-0` o expresión aritmética constante) se reporta como `Division por cero`; un divisor variable no puede evaluarse estáticamente.
+Cada error se imprime con renglón, columna, tipo de error, tipos implicados y descripción; la fase (`Lexico`/`Sintactico`/`Semantico`) se conserva internamente para clasificación y orden. Las variables `Ent` asignadas a expresiones constantes propagan su valor: `a := 10; b := 2;` hace evaluable `a / b`, y un divisor calculado en cero (p. ej. `a / (b - 2)` con `b = 2`) se reporta como `Division por cero`; `leerdig`/`leercad` y las asignaciones dentro de `si`/`mientras` dejan el valor en desconocido. El valor final de cada variable se muestra en `progfte.sem` (`Valor:`) y la evaluación de cada operación, en `progfte.ast.json` (`valor`).
 
 ## Generar el informe
 

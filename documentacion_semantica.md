@@ -1,6 +1,6 @@
 # Analizador léxico y semántico PF2025
 
-Lenguajes y Autómatas II | Informe técnico | 21 de septiembre de 2026
+Lenguajes y Autómatas II | Informe técnico | 22 de septiembre de 2026
 
 ## Índice
 
@@ -11,7 +11,7 @@ Lenguajes y Autómatas II | Informe técnico | 21 de septiembre de 2026
 5. Esquemas de traducción y acciones semánticas ............................. 5
 6. Árboles anotados ........................................................ 6
 7. Gestión de errores y archivos de salida ................................. 7
-8. Pruebas y correspondencia con la rúbrica ................................. 8
+8. Verificación y correspondencia con la rúbrica ..................... 8
 9. Conclusiones, alcance y referencias ..................................... 9
 
 ## 1. Introducción y objetivo
@@ -28,8 +28,8 @@ El informe se entrega sin portada por solicitud del usuario. Incluye las seccion
 
 - Verificar declaraciones, duplicados, expresiones, asignaciones, condiciones y argumentos.
 - Construir un AST real y utilizar una pila semántica para reducir expresiones.
-- Conservar renglón, fase, clase de error y tipos implicados en cada diagnóstico.
-- Mantener el programa de referencia intacto y añadir pruebas reproducibles.
+- Conservar renglón, columna, fase, clase de error y tipos implicados en cada diagnóstico.
+- Asignar valores fijos a las variables para evaluar expresiones de forma estática.
 
 <!-- pagebreak -->
 
@@ -114,7 +114,7 @@ La implementación usa precedencias numéricas: `o=1`, `y=2`, `no=3`, relaciones
 | impcad(E) | E es cad | Impresión válida |
 | impdig(E) / impBool(E) | Analizar E, sin imponer tipo final | Excepción solicitada |
 
-Un tipo `None` representa una expresión ya inválida. Se propaga para evitar errores derivados redundantes. La división produce tipo `ent` en este análisis; no se ejecuta el programa, pero un divisor cuyo valor constante es cero (`0`, `(0)`, `-0` o una expresión aritmética constante) se reporta como división por cero. Un divisor variable depende de la ejecución y no puede evaluarse estáticamente.
+Un tipo `None` representa una expresión ya inválida. Se propaga para evitar errores derivados redundantes. La división produce tipo `ent` en este análisis; no se ejecuta el programa, pero un divisor cuyo valor constante es cero (`0`, `(0)`, `-0` o una expresión aritmética constante) se reporta como división por cero. Una variable `Ent` asignada a una expresión constante propaga su valor: con `a := 10; b := 2;`, la expresión `a / b` se evalúa y un divisor calculado como `b - 2` se detecta como cero. Las lecturas (`leerdig`/`leercad`) y las asignaciones dentro de `si` o `mientras` dejan el valor en desconocido, porque dependen de la ejecución.
 
 <!-- pagebreak -->
 
@@ -140,13 +140,13 @@ progfte.txt -> comentarios enmascarados -> tokens + tabla léxica
 
 La tabla léxica conserva cada lexema distinto con su token y referencia; un diccionario permite reutilizar referencias de lexemas repetidos. La tabla semántica registra por nombre el tipo, ámbito global y coordenadas de declaración. La consulta `_tipo_variable` utiliza esta tabla; una redeclaración genera un error y conserva la primera declaración.
 
-Las declaraciones con un error léxico se omiten para evitar incorporar símbolos parciales. En la entrada de referencia, `nombre@Usuario` es inválido y no declara `nombreUsuario`. Las variables globales son visibles dentro de los condicionales y ciclos. Una declaración en el cuerpo se rechaza como sintaxis inválida.
+Las declaraciones con un error léxico se omiten para evitar incorporar símbolos parciales. Las variables globales son visibles dentro de los condicionales y ciclos. Una declaración en el cuerpo se rechaza como sintaxis inválida.
 
 ### Pila semántica y AST
 
-Cada primario apila un nodo con clase, lexema, posición y tipo. `_reducir` extrae uno o dos nodos, comprueba sus tipos y apila el nodo del operador con sus hijos. `_expresion` extrae el resultado para incorporarlo a la sentencia y verifica que la pila recupere su tamaño inicial. Después de analizar una sentencia completa no quedan operandos pendientes.
+Cada primario apila un nodo con clase, lexema, posición, tipo y valor estático. `_reducir` extrae uno o dos nodos, comprueba sus tipos y apila el nodo del operador con sus hijos y el valor constante cuando es deducible. `_expresion` extrae el resultado para incorporarlo a la sentencia y verifica que la pila recupere su tamaño inicial. Después de analizar una sentencia completa no quedan operandos pendientes.
 
-El AST contiene un nodo `Programa`, declaraciones y cuerpo; las sentencias contienen sus expresiones, condiciones y bloques hijos. Los nodos inválidos conservan tipo nulo. El archivo `.ast.json` permite inspeccionar la jerarquía y los atributos, sin depender de dibujos manuales. Su serialización usa `json` de la biblioteca estándar [3].
+El AST contiene un nodo `Programa`, declaraciones y cuerpo; las sentencias contienen sus expresiones, condiciones y bloques hijos. Los nodos inválidos conservan tipo nulo. El archivo `.ast.json` permite inspeccionar la jerarquía y los atributos —incluido el campo `valor` de cada nodo, nulo cuando depende de la ejecución—, sin depender de dibujos manuales. Su serialización usa `json` de la biblioteca estándar [2].
 
 <!-- pagebreak -->
 
@@ -157,13 +157,14 @@ Se usa `T` como tabla semántica, `P` como pila y `n.tipo` como atributo de un n
 | Producción o evento | Acción implementada |
 |---|---|
 | tipo id | Si id pertenece a T, informar duplicado; en otro caso insertar tipo, ámbito y posición. Crear nodo Declaracion. |
-| id como expresión | Consultar T; si no existe, informar variable no declarada. Apilar nodo Variable con su tipo o tipo nulo. |
-| literal | Apilar nodo Literal con ent, cad o bool. |
+| id como expresión | Consultar T; si no existe, informar variable no declarada. Apilar nodo Variable con su tipo o tipo nulo y el valor propagado cuando se conoce. |
+| literal | Apilar nodo Literal con ent, cad o bool; anotar su valor cuando es entero. |
 | ( E ) | Consumir delimitadores y sustituir el nodo superior por Grupo, conservando el tipo de E. |
 | operador unario E | Extraer E; comprobar tipo; apilar Unario con hijo E y tipo resultante. |
-| E1 operador E2 | Extraer E2 y E1; comprobar reglas de tipos; apilar Binario con hijos ordenados. |
+| E1 operador E2 | Extraer E2 y E1; comprobar reglas de tipos; apilar Binario con hijos ordenados y su valor constante cuando es deducible. |
 | E1 / E2 con divisor constante en cero | Informar `Division por cero`; el tipo de la expresión sigue siendo `ent` para no generar errores en cascada. |
 | id := E ; | Consultar id, consumir resultado de E, comparar tipos y construir Asignacion. |
+| id := E con E constante | Registrar el valor estático de E en la tabla semántica (propagación de constantes). |
 | lectura ( E ) ; | Consumir E; exigir un nodo Variable y el tipo requerido por la lectura; construir Llamada. |
 | impresión ( E ) ; | Consumir E; exigir cad solamente para impcad; construir Llamada. |
 | si E entonces B1 sino B2 finsi | Exigir bool en E; analizar ambos bloques; construir Si con condición, cuerpo y alternativa. |
@@ -240,66 +241,63 @@ Se informa `Operandos incompatibles` en la posición de `+`, con tipos esperados
 
 ## 7. Gestión de errores y archivos de salida
 
-Cada diagnóstico se imprime con renglón, clase de error, tipos implicados y descripción. La fase y la columna se conservan internamente: la fase clasifica cada diagnóstico, ordena los reportes y distingue un problema de estructura de uno de tipos; la columna posiciona los nodos del AST y las declaraciones de la tabla semántica. Un tabulador cuenta como un carácter. Los errores se ordenan por renglón y columna, manteniendo varios diagnósticos si son necesarios en una misma línea.
+Cada diagnóstico se imprime con renglón, columna, clase de error, tipos implicados y descripción. La fase se conserva internamente: clasifica cada diagnóstico, ordena los reportes y distingue un problema de estructura de uno de tipos; también posiciona los nodos del AST y las declaraciones de la tabla semántica. Un tabulador cuenta como un carácter. Los errores se ordenan por renglón y columna, manteniendo varios diagnósticos si son necesarios en una misma línea.
 
 Internamente las fases son `Lexico`, `Sintactico` y `Semantico`. Un carácter inválido es léxico; la falta de un delimitador es sintáctica; una incompatibilidad de tipos es semántica. Esta distinción no se imprime en el mensaje, pero evita atribuir a los tipos un problema de estructura. En un error léxico, el tipo de dato se indica como `no aplica`; una variable sin declaración tiene tipo `desconocido`.
 
 ### Ejemplo del formato
 
 ```text
-Renglon: 5,
+Renglon: 5, Columna: 1,
 Tipo de error: Asignacion incompatible,
 Tipo de dato: esperado: ent; obtenido: bool,
 Se esperaba ent, se obtuvo bool
 ```
 
-El ejemplo se divide visualmente para facilitar su lectura. En `.tok`, `.sem` y consola, cada diagnóstico se escribe en una sola línea. Los diccionarios internos también conservan `tipo_esperado`, `tipo_obtenido` y la columna por separado.
+El ejemplo se divide visualmente para facilitar su lectura. En `.tok`, `.sem` y consola, cada diagnóstico se escribe en una sola línea. Los diccionarios internos también conservan `tipo_esperado`, `tipo_obtenido` y la fase por separado.
 
 | Archivo | Evidencia generada |
 |---|---|
 | progfte.dep | Código sin comentarios y con separación normalizada |
 | progfte.tab | Tabla de lexemas, tokens y referencias |
 | progfte.tok | Tokens reconocidos y diagnósticos unificados |
-| progfte.sem | Variables, tipos, ámbito, posición de declaración y errores |
-| progfte.ast.json | Árbol completo con tipos y coordenadas |
+| progfte.sem | Variables, tipos, ámbito, posición de declaración, valor propagado y errores |
+| progfte.ast.json | Árbol completo con tipos, coordenadas y valores constantes |
 
 ### Resultado del programa de referencia
 
-Sin modificar `entrada/progfte.txt`, el resultado es **273 tokens, 61 símbolos léxicos, 5 variables y 3 errores**. El renglón 5 contiene el identificador inválido `nombre@Usuario`. Los renglones 65 y 67 usan `nombreUsuario`, que no fue declarado.
+Con `entrada/progfte.txt` como programa de referencia, el resultado es **292 tokens, 64 símbolos léxicos, 6 variables y 3 errores**: lectura incompatible en el renglón 13 (`leerdig` sobre la variable `cad` `nombreUsuario`), división por cero en el renglón 29 (divisor `b - 2`, con `b = 2` propagado) y operandos incompatibles en el renglón 75 (`"Hola" + b`). Los valores fijos `a := 10;` y `b := 2;` permiten evaluar las expresiones aritméticas de forma estática: la tabla de `progfte.sem` muestra el valor final de cada variable y `progfte.ast.json` la evaluación de cada operación (`a + b` en 12, `a * b` en 20, `a - b` en 8, `a / b` en 5).
 
 La recuperación sintáctica utiliza delimitadores y cierres de bloque para continuar después de una estructura inválida. Se garantiza el avance del cursor en el cuerpo para evitar que un token inesperado detenga indefinidamente el análisis. La recuperación busca diagnósticos útiles, sin garantizar que una entrada arbitrariamente malformada produzca un único error.
 
 <!-- pagebreak -->
 
-## 8. Pruebas y correspondencia con la rúbrica
+## 8. Verificación y correspondencia con la rúbrica
 
-Se ejecutaron **20 pruebas automatizadas**, varias con subcasos, mediante `unittest` [2]. Todas finalizaron correctamente. Las pruebas trabajan en memoria o en carpetas temporales; no alteran el programa fijo. Se verificó además que el archivo de entrada no tiene diferencias respecto de Git.
+La verificación se realiza ejecutando el analizador sobre el programa de referencia y revisando el trailer y los archivos generados. Las comprobaciones de la propagación de constantes (divisor con valor conocido, asignación condicional, lecturas y reasignaciones) se verificaron además con programas analizados en memoria.
 
 ```text
-python -B -m unittest discover -s tests -v
-Ran 20 tests
-OK
-
 python src/analizador_lexico.py
 Total de errores: 3
 ```
 
-| Grupo de pruebas | Resultado comprobado |
+| Grupo de verificación | Resultado comprobado |
 |---|---|
 | Referencia y salidas | Conteos esperados; AST exportable; campos del diagnóstico |
 | Declaraciones y asignaciones | Variables inexistentes, duplicados e incompatibilidades |
 | Operadores y precedencia | Aritmética, relaciones, lógica, unarios y estructura del AST |
-| División | Divisor constante en cero detectado (`0`, `(0)`, `-0`, expresiones); divisores variables sin falsos positivos |
+| División | Divisor constante en cero detectado (`0`, `(0)`, `-0`, expresiones); divisores desconocidos sin falsos positivos |
+| Propagación de constantes | Divisor evaluado con valores asignados; lecturas y bloques condicionales sin falsos positivos; valores visibles en `.sem` y `.ast.json` |
 | Condicionales y ciclos | Condiciones bool, errores en ambos cuerpos y anidamiento |
 | Funciones | Lecturas con variables y tipos correctos; rechazo de literales |
 | Excepciones de impresión | impdig e impBool admiten cualquier tipo final válido |
 | Léxico y posiciones | Cadenas intactas, comentarios abiertos, identificadores y != |
 | Recuperación | Expresiones incompletas, cierres ausentes, pila balanceada |
-| Propagación | Un error de variable no causa incompatibilidades redundantes |
+| Propagación de errores | Un error de variable no causa incompatibilidades redundantes |
 
 ### Correspondencia con los aspectos evaluados
 
-**Funcionamiento (40%).** Hay verificaciones de tipos, variables y ámbito global, análisis de expresiones aritméticas, argumentos, asignaciones y diagnósticos con coordenadas. Los tipos se calculan durante el recorrido de tokens. Evaluar expresiones se entiende aquí como determinar su validez y tipo, no ejecutar un intérprete.
+**Funcionamiento (40%).** Hay verificaciones de tipos, variables y ámbito global, análisis de expresiones aritméticas, argumentos, asignaciones y diagnósticos con renglón y columna. Los tipos se calculan durante el recorrido de tokens. Evaluar expresiones se entiende aquí como determinar su validez y tipo, y calcular las constantes conocidas mediante propagación, no ejecutar un intérprete.
 
 **Código (20%).** La implementación está comentada, construye AST, alimenta y consulta tablas de símbolos y reduce nodos mediante una pila semántica. La explicación oral debe ser realizada por cada integrante.
 
@@ -313,11 +311,11 @@ Total de errores: 3
 
 ### Conclusiones técnicas
 
-La corrección principal consiste en relacionar el análisis con estructuras verificables. Las declaraciones alimentan una tabla semántica; las expresiones producen nodos tipados; los operadores consumen operandos reales de la pila; las sentencias incorporan esos nodos al AST. Esto permite comprobar el comportamiento mediante pruebas y explicar el resultado a partir del árbol.
+La corrección principal consiste en relacionar el análisis con estructuras verificables. Las declaraciones alimentan una tabla semántica; las expresiones producen nodos tipados; los operadores consumen operandos reales de la pila; las sentencias incorporan esos nodos al AST. Esto permite comprobar el comportamiento mediante la corrida de referencia y explicar el resultado a partir del árbol.
 
 La separación entre texto para análisis y texto depurado evita perder la ubicación de los errores. Los ciclos se reconocen desde la fase léxica y sus condiciones y cuerpos se comprueban semánticamente. Los argumentos de lectura deben ser variables del tipo correspondiente. Las dos excepciones de impresión se mantienen sin desactivar la revisión interna de sus expresiones.
 
-Las pruebas demuestran los casos incluidos y la conservación del resultado del programa de referencia. No constituyen una garantía para toda entrada posible. El lenguaje implementa un ámbito global, no ámbitos locales; analiza tipos y constantes, no valores de variables en ejecución. El enunciado de la práctica 1 citado por la rúbrica no fue proporcionado y puede contener restricciones adicionales que deberán contrastarse si se dispone de él.
+La verificación demuestra los casos incluidos y la conservación del resultado del programa de referencia. No constituye una garantía para toda entrada posible. El lenguaje implementa un ámbito global, no ámbitos locales; analiza tipos y constantes, no valores de variables en ejecución. El enunciado de la práctica 1 citado por la rúbrica no fue proporcionado y puede contener restricciones adicionales que deberán contrastarse si se dispone de él.
 
 ### Propuesta de conclusión personal
 
@@ -329,8 +327,6 @@ Texto propuesto para que cada integrante adapte a su experiencia antes de entreg
 
 [1] Guzmán S., Marco Antonio. *U1 Rúbrica Semántico Alumnos*. Instituto Tecnológico de Cd. Guzmán, Departamento de Sistemas y Computación, Lenguajes y Autómatas II. Documento de dos páginas proporcionado por el usuario; fecha límite indicada: 18 de septiembre de 2026.
 
-[2] Python Software Foundation. *unittest - Unit testing framework*. Documentación oficial de Python. Consulta: 21 de septiembre de 2026. https://docs.python.org/3.11/library/unittest.html
+[2] Python Software Foundation. *json - JSON encoder and decoder*. Documentación oficial de Python. Consulta: 21 de septiembre de 2026. https://docs.python.org/3.13/library/json.html
 
-[3] Python Software Foundation. *json - JSON encoder and decoder*. Documentación oficial de Python. Consulta: 21 de septiembre de 2026. https://docs.python.org/3.13/library/json.html
-
-[4] Proyecto PF2025. *Código fuente y pruebas de aceptación*: `src/analizador_lexico.py` y `tests/test_rubrica.py`. Versión local revisada el 21 de septiembre de 2026. Evidencia primaria de los resultados de este informe.
+[3] Proyecto PF2025. *Código fuente*: `src/analizador_lexico.py` y archivos de salida en `salida/`. Versión local revisada el 22 de septiembre de 2026. Evidencia primaria de los resultados de este informe.

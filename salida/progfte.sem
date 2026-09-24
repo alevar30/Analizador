@@ -1,16 +1,15 @@
 ANALISIS SEMANTICO PF2025
 
 --- TABLA DE SIMBOLOS SEMANTICA ---
-Variable: a, Tipo: ent, Ambito: global, Declaracion: 4:5
-Variable: b, Tipo: ent, Ambito: global, Declaracion: 4:8
-Variable: resultado, Tipo: ent, Ambito: global, Declaracion: 4:11
-Variable: esValido, Tipo: bool, Ambito: global, Declaracion: 6:6
-Variable: terminado, Tipo: bool, Ambito: global, Declaracion: 6:16
-Total de variables declaradas: 5
+Variable: a, Tipo: ent, Ambito: global, Declaracion: 4:5, Valor: 10
+Variable: b, Tipo: ent, Ambito: global, Declaracion: 4:8, Valor: 2
+Variable: resultado, Tipo: ent, Ambito: global, Declaracion: 4:11, Valor: 12
+Variable: nombreUsuario, Tipo: cad, Ambito: global, Declaracion: 6:5, Valor: desconocido
+Variable: esValido, Tipo: bool, Ambito: global, Declaracion: 7:6, Valor: desconocido
+Variable: terminado, Tipo: bool, Ambito: global, Declaracion: 7:16, Valor: desconocido
+Total de variables declaradas: 6
 
 --- ERRORES ---
-Renglon: 5, Tipo de error: Identificador invalido, Tipo de dato: no aplica, Identificador no valido: nombre@Usuario (contiene caracteres no permitidos)
-Renglon: 23, Tipo de error: Division por cero, Tipo de dato: esperado: divisor distinto de cero; obtenido: 0, Division por cero: no se puede dividir entre cero
-Renglon: 65, Tipo de error: Variable no declarada, Tipo de dato: esperado: no aplica; obtenido: desconocido, Variable no declarada: nombreUsuario
-Renglon: 67, Tipo de error: Variable no declarada, Tipo de dato: esperado: no aplica; obtenido: desconocido, Variable no declarada: nombreUsuario
-Total de errores: 4
+Renglon: 13, Columna: 9, Tipo de error: Tipo incompatible en lectura, Tipo de dato: esperado: ent; obtenido: cad, Se esperaba ent, se obtuvo cad
+Renglon: 29, Columna: 16, Tipo de error: Division por cero, Tipo de dato: esperado: divisor distinto de cero; obtenido: 0, Division por cero: no se puede dividir entre cero
+Total de errores: 2

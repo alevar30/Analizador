@@ -1,13 +1,12 @@
 # AGENTS.md
 
 ## Project
-Lexical + semantic analyzer for the educational language **PF2025** (Lenguajes y Automatas course). All logic lives in one file, `src/analizador_lexico.py` — Python 3, stdlib only (`os`, `re`, `json`). Acceptance tests use stdlib unittest; no build step exists.
+Lexical + semantic analyzer for the educational language **PF2025** (Lenguajes y Automatas course). All logic lives in one file, `src/analizador_lexico.py` — Python 3, stdlib only (`os`, `re`, `json`). No tests, linter, or build step exist.
 
 ## Commands
 - Run the analyzer: `python3 src/analizador_lexico.py` (run from the project dir; paths resolve relative to the script location, so CWD is irrelevant).
 - It reads `entrada/progfte.txt` and overwrites `salida/progfte.{dep,tab,tok,sem,ast.json}` on every run. Treat `salida/` as generated output — never edit by hand.
-- Run tests: `python -B -m unittest discover -s tests -v` (20 tests with subcases).
-- Verify by running the script and checking the trailer (`Total de errores`). With the current input this is 273 tokens and 3 errors total (rows 5, 65, 67).
+- Verify by running the script and checking the trailer (`Total de errores`). With the current input this is 292 tokens, 64 symbols, 6 variables, and 3 errors (rows 13, 29, 75).
 
 ## PF2025 quirks
 - Case-sensitive. Reserved words: `pf2025 decl inicio fin si entonces sino finsi Ent cad Bool leerdig leercad impdig impcad verdadero falso y o no impBool mientras hacer finmientras`.
@@ -16,9 +15,9 @@ Lexical + semantic analyzer for the educational language **PF2025** (Lenguajes y
 - Token refs: reserved words 100-123, operators/delimiters 500-514, identifiers 600+, integer constants 700+, string literals 800+. Duplicate lexemes reuse the same ref number.
 
 ## Gotchas
-- NEVER modify `entrada/progfte.txt` — it is the fixed source input for the practice and grading.
-- Errors from both phases are merged into a single list (`_errores_unificados`), one per line in `Renglon: N, Tipo de error: X, Tipo de dato: X, descripcion` format (no phase or column in the printed line; both are kept internally for classification, sorting, AST, and declaration positions), written to `.tok`, `.sem`, and console. `generar_tok` therefore runs AFTER semantic analysis and receives the semantic errors as an argument.
-- Division by a statically-known zero divisor (literal `0`, `(0)`, `-0`, or folded constant arithmetic via `_valor_constante`) is reported as `Division por cero` in `_reducir`; variable divisors are runtime values and stay unchecked.
+- NEVER modify `entrada/progfte.txt` unless the user explicitly authorizes the change — it is the fixed source input for the practice and grading.
+- Errors from both phases are merged into a single list (`_errores_unificados`), one per line in `Renglon: N, Columna: N, Tipo de error: X, Tipo de dato: X, descripcion` format (the phase is not printed; it is kept internally for classification and sorting), written to `.tok`, `.sem`, and console. `generar_tok` therefore runs AFTER semantic analysis and receives the semantic errors as an argument.
+- Constant propagation: an `Ent` variable assigned a constant expression stores its static `valor` in the semantic symbol table; `_valor_constante` reads it for `Variable` nodes. Division by a statically-known zero divisor (literal `0`, folded constants, or propagated variable values) is reported as `Division por cero` in `_reducir`. `leerdig`/`leercad` and assignments inside `si`/`mientras` blocks reset the value to unknown (conditional assignments must not propagate). The value is surfaced as `Valor:` in the `.sem` symbol table and every expression node in `.ast.json` carries a `valor` key (null when unknown).
 - Original coordinates come from `lineas_lexicas` (comments replaced with spaces). `.dep` is only a normalized display. Tabs count as one character.
 - Syntax diagnostics use phase `Sintactico`; semantic errors use `Semantico`.
 - AST nodes are reduced on `pila_semantica`; completed expressions leave it balanced. The semantic symbol table stores global scope and declaration positions.

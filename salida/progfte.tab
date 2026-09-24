@@ -13,56 +13,58 @@ No     LEXEMA                    TOKEN           REF
 8      resultado                 id              603   
 9      ;                         PC              500   
 10     cad                       CAD             109   
-11     Bool                      BOOL            110   
-12     esValido                  id              604   
-13     terminado                 id              605   
-14     inicio                    INICIO          102   
-15     impcad                    IMPCAD          114   
-16     (                         PAREN           502   
-17     "Ingrese el primer numero" CAD_LIT         800   
-18     )                         TESIS           503   
-19     leerdig                   LEERDIG         111   
-20     "Ingrese el segundo numero" CAD_LIT         801   
-21     :=                        ASIG            504   
-22     +                         MAS             505   
-23     "El resultado de la suma es:" CAD_LIT         802   
-24     impdig                    IMPDIG          113   
-25     *                         MUL             507   
-26     "El resultado de la multiplicacion es:" CAD_LIT         803   
-27     -                         MENOS           506   
-28     "El resultado de la resta es:" CAD_LIT         804   
-29     /                         DIV             508   
-30     0                         CENT            700   
-31     "El resultado de la division es:" CAD_LIT         805   
-32     verdadero                 VERDADERO       116   
-33     falso                     FALSO           117   
-34     si                        SI              104   
-35     ==                        EQU             513   
-36     entonces                  ENTONCES        105   
-37     "Los numeros son iguales" CAD_LIT         806   
-38     sino                      SINO            106   
-39     "Los numeros son diferentes" CAD_LIT         807   
-40     finsi                     FINSI           107   
-41     !=                        DIF             514   
-42     >                         MAYOR           509   
-43     "El primer numero es mayor" CAD_LIT         808   
-44     <                         MENOR           510   
-45     "El segundo numero es mayor" CAD_LIT         809   
-46     >=                        MAYIG           511   
-47     "El primer numero es mayor o igual" CAD_LIT         810   
-48     <=                        MENIG           512   
-49     "El segundo numero es mayor o igual" CAD_LIT         811   
-50     y                         Y               118   
-51     "a es mayor y b es positivo" CAD_LIT         812   
-52     o                         O               119   
-53     "a es igual a b o b es cero" CAD_LIT         813   
-54     no                        NO              120   
-55     "esValido es falso"       CAD_LIT         814   
-56     "El programa continua"    CAD_LIT         815   
-57     "Ingrese su nombre:"      CAD_LIT         816   
-58     leercad                   LEERCAD         112   
-59     nombreUsuario             id              606   
-60     "Hola usuario:"           CAD_LIT         817   
-61     fin                       FIN             103   
+11     nombreUsuario             id              604   
+12     Bool                      BOOL            110   
+13     esValido                  id              605   
+14     terminado                 id              606   
+15     inicio                    INICIO          102   
+16     impcad                    IMPCAD          114   
+17     (                         PAREN           502   
+18     "Ingrese el primer numero" CAD_LIT         800   
+19     )                         TESIS           503   
+20     leerdig                   LEERDIG         111   
+21     "Ingrese el segundo numero" CAD_LIT         801   
+22     :=                        ASIG            504   
+23     10                        CENT            700   
+24     2                         CENT            701   
+25     +                         MAS             505   
+26     "El resultado de la suma es:" CAD_LIT         802   
+27     impdig                    IMPDIG          113   
+28     *                         MUL             507   
+29     "El resultado de la multiplicacion es:" CAD_LIT         803   
+30     -                         MENOS           506   
+31     "El resultado de la resta es:" CAD_LIT         804   
+32     /                         DIV             508   
+33     "El resultado de la division es:" CAD_LIT         805   
+34     verdadero                 VERDADERO       116   
+35     falso                     FALSO           117   
+36     si                        SI              104   
+37     ==                        EQU             513   
+38     entonces                  ENTONCES        105   
+39     "Los numeros son iguales" CAD_LIT         806   
+40     sino                      SINO            106   
+41     "Los numeros son diferentes" CAD_LIT         807   
+42     finsi                     FINSI           107   
+43     !=                        DIF             514   
+44     >                         MAYOR           509   
+45     "El primer numero es mayor" CAD_LIT         808   
+46     <                         MENOR           510   
+47     "El segundo numero es mayor" CAD_LIT         809   
+48     >=                        MAYIG           511   
+49     "El primer numero es mayor o igual" CAD_LIT         810   
+50     <=                        MENIG           512   
+51     "El segundo numero es mayor o igual" CAD_LIT         811   
+52     y                         Y               118   
+53     0                         CENT            702   
+54     "a es mayor y b es positivo" CAD_LIT         812   
+55     o                         O               119   
+56     "a es igual a b o b es cero" CAD_LIT         813   
+57     no                        NO              120   
+58     "esValido es falso"       CAD_LIT         814   
+59     "El programa continua"    CAD_LIT         815   
+60     "Ingrese su nombre:"      CAD_LIT         816   
+61     leercad                   LEERCAD         112   
+62     "Hola usuario:"           CAD_LIT         817   
+63     fin                       FIN             103   
 ============================================================
-Total de simbolos: 61
+Total de simbolos: 63
